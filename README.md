@@ -26,7 +26,7 @@ It contains a sample input files:  beam1.in beam2.in + adios2-config.xml
   mpirun -n 4 ../build-adios2/bin/adios2.xmain 
 
 - Analysis:
-  ./build-adios2/bin/adios2.tune_foot
+  ./build-adios2/bin/adios2.mod_tunefoot
   
   
 ===== FOR SENSEI ===
