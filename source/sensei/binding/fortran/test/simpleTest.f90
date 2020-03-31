@@ -116,8 +116,9 @@ program testSenseiBeam
 
   call sensei_r_get_data(senseiR, d1, d2, ierr)
 
-  write (*,*) d1
-  write (*,*) d2
+  write (*,'(4F10.4)') d1
+  write (*,*)
+  write (*,'(4F10.4)') d2
   
   !!verify d1, d2 and then put them to data1 data2 before passing to FFT
   deallocate(d1); 
