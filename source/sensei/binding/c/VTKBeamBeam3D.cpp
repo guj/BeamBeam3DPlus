@@ -647,7 +647,7 @@ bool VTKBeamBeam3DReader::readPtl(double* data1, double* data2)
     //std::cout<<"turns read: "<<m_TurnsRead<<std::endl;
     return result;
   } else {
-    std::cout<<" Will need to assemble blocks from different ranks and map back to data"<<std::endl;
+    std::cout<<"\n\nWill need to assemble blocks from different ranks and map back to data"<<std::endl;
     return false;
   }
 

@@ -64,7 +64,8 @@ uint64_t SenseiHandleReader_selSize(SenseiHandleReader* reader)
 //
 uint64_t SenseiHandleReader_nPtls(SenseiHandleReader* reader)
 {
-  return reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetPtlsReadPerTurn();
+  //return reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetPtlsReadPerTurn();
+  return reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetNumParticles();
   //return reader->GetPtlsReadPerTurn();
 }
 
@@ -73,7 +74,15 @@ uint64_t SenseiHandleReader_nPtls(SenseiHandleReader* reader)
 //
 uint64_t SenseiHandleReader_nTurns(SenseiHandleReader* reader)
 {
-  return reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetTurnsRead();
+  if (reader == NULL) {
+    printf("ERROR, NULL READER\n");
+    return 0;
+  }
+
+  printf("##DEBUG: Num PARTICLES: %llu\n", reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetNumParticles());
+  printf("##DEBUG: Num TURNS: %llu\n", reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetNumTurns());
+  //return reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetTurnsRead();
+  return reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetNumTurns();
   //return reader->GetTurnsRead();
 }
 
