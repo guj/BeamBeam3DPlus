@@ -146,6 +146,7 @@ void FC_GLOBAL(senseihandlereader_get_num_turns_f2c,
 						     int* ierr)
 {
   if (*sensei == NULL) {
+    printf("FC Error: NULL SENSEI PTR");
     *ierr = -1;
     return;
   }
