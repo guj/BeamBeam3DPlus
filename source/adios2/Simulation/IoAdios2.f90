@@ -44,7 +44,7 @@ MODULE ADIOS2_UTIL
         call adios2_declare_io (a2_io, a2_handle, "SimulationOutput", ierr)
         call adios2_declare_io (a2_phase_io, a2_handle, "PhaseOutput", ierr)
 
-        fname = "beam3d"
+        fname = "beam3d.bp"
         ! Open file
         call adios2_open (a2_engine, a2_io, fname, adios2_mode_write, &
              comm, ierr)

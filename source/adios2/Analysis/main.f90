@@ -13,7 +13,7 @@ program main
   logical :: do_time = .false.
   integer :: i
   integer :: ptlStart=0, ptlCount=10
-  integer :: tStart=0, tCount=1024; !! turnStart/Count
+  integer :: tStart=0, tCount=2; !! turnStart/Count
   integer :: bunchID=0;
   integer :: attrPos1=0, attrPos2=1
 

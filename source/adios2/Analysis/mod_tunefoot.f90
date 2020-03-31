@@ -34,7 +34,9 @@ MODULE ADIOS2_TUNEFOOT
       fname = "beam3d.bp";
       call adios2_open (a2_Reader, a2_io, fname, adios2_mode_read, &
            comm, ierr)      
-      
+      write (*,*) ierr, a2_Reader
+
+
       call MPI_Comm_rank(comm, rank, ierr);
       call MPI_Comm_size(comm, size, ierr);
     end SUBROUTINE tunefoot_init
@@ -117,8 +119,11 @@ MODULE ADIOS2_TUNEFOOT
 
          !call adios2_begin_step_full(a2_Reader, adios2_step_mode_next_available, 0., &
          !     step_status, ierr)
-         call adios2_begin_step(a2_Reader, ierr);
+         !!call adios2_begin_step(a2_Reader, ierr);
+         ierr = 0;
+         call adios2_begin_step(a2_Reader, adios2_step_mode_read, 0., step_status, ierr);
          if(step_status == adios2_step_status_end_of_stream) exit
+         if (ierr .ne. 0) exit;
 
          call adios2_current_step(current_step, a2_Reader, ierr)
 
