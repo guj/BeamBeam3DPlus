@@ -1,56 +1,17 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.6)
 
-set(ADIOS2_ROOT "$ENV{ADIOS2_ROOT}")
+find_package(ADIOS2 REQUIRED)
+
+  add_library(sADIOS2 INTERFACE)
+  target_link_libraries(sADIOS2 INTERFACE adios2::adios2_f)
+  install(TARGETS sADIOS2 EXPORT sADIOS2)
+  install(EXPORT sADIOS2 DESTINATION lib/cmake EXPORT_LINK_INTERFACE_LIBRARIES)
+
+
+
+message(STATUS "adios2 found.")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-message(STATUS "${ADIOS2_ROOT} $ENV{ADIOS2_ROOT}")
-if (ADIOS2_ROOT)
-   set(ADIOS2_INCLUDE_OPTS HINTS ${ADIOS2_ROOT}/include NO_DEFAULT_PATHS)
-   set(ADIOS2_LIBRARY_OPTS
-      HINTS ${ADIOS2_ROOT}/lib ${ADIOS2_ROOT}/lib64
-      NO_DEFAULT_PATHS
-    )
-endif()
-
-find_path(ADIOS2_INCLUDE_DIR adios2.h ${ADIOS2_INCLUDE_OPTS})
-find_library(ADIOS2_LIBRARY_FORTRAN adios2_f ${ADIOS2_LIBRARY_OPTS})
-find_library(ADIOS2_LIBRARY_CPP adios2 ${ADIOS2_LIBRARY_OPTS})
-find_library(ADIOS2_LIBRARY_ATL adios2_atl ${ADIOS2_LIBRARY_OPTS})
-find_library(ADIOS2_LIBRARY_DILL adios2_dill ${ADIOS2_LIBRARY_OPTS})
-find_library(ADIOS2_LIBRARY_FFS adios2_ffs ${ADIOS2_LIBRARY_OPTS})
-find_library(ADIOS2_LIBRARY_SST adios2_sst ${ADIOS2_LIBRARY_OPTS})
-find_library(ADIOS2_LIBRARY_TAU taustubs ${ADIOS2_LIBRARY_OPTS})
-find_library(ADIOS2_LIBRARY_EVPATH adios2_evpath ${ADIOS2_LIBRARY_OPTS})
-
-
-message(STATUS "${ADIOS2_INCLUDE_DIR}")
-
-
-
-#set(ADIOS2_INCLUDE_DIRS ${ADIOS2_INCLUDE_DIR} ${ADIOS2_INCLUDE_DIR}/fortran)
-set(ADIOS2_INCLUDE_DIR_FORTRAN ${ADIOS2_INCLUDE_DIR}/adios2/fortran)
-set(ADIOS2_LIBRARIES ${ADIOS2_LIBRARY_FORTRAN} 
-		     ${ADIOS2_LIBRARY_CPP} 
-		     ${ADIOS2_LIBRARY_ATL} 
-		     ${ADIOS2_LIBRARY_DILL} 
-		     ${ADIOS2_LIBRARY_FFS} 
-		     ${ADIOS2_LIBRARY_EVPATH} 
-		     ${ADIOS2_LIBRARY_SST} 
-		     ${ADIOS2_LIBRARY_TAU} )
-
-#add_library(adios2::adios2_f UNKNOWN IMPORTED)
-
-#include_directories(${ADIOS2_INCLUDE_DIR})
-#link_directories(${ADIOS2_LIBRARIES})
-
-
-#set_target_properties(adios2::adios2_f PROPERTIES
-#        			       IMPORTED_LOCATION             "${ADIOS2_LIBRARY}"
-#        			       INTERFACE_INCLUDE_DIRECTORIES "${ADIOS2_INCLUDE_DIR}"
-#      )	
-
-
 
 add_subdirectory(Simulation)
 add_subdirectory(Analysis)

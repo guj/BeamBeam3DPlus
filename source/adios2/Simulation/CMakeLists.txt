@@ -1,5 +1,9 @@
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+set(mpi TRUE)
+
+##-----
 #set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-enable_language(Fortran)
 
 set(base_source_dir ../../base/)
 set(base_sources 		
@@ -35,17 +39,30 @@ list(APPEND base_sources Output.f90)
 
 message(STATUS "..${ADIOS2_LIBRARIES}")
 
-set(exe xmain_adios2)
+macro(fortran_add_test_helper testname mpi)
+  set(tgt adios2.${testname})
+  add_executable(${tgt} ${base_sources})
+  set_target_properties(${tgt} PROPERTIES LINKER_LANGUAGE Fortran)
+  #target_link_libraries(${tgt} adios2_f)
+  target_link_libraries(${tgt} sADIOS2)	
+  if(mpi)
+    target_compile_definitions(${tgt} PRIVATE USE_MPI)
+    target_link_libraries(${tgt} MPI::MPI_Fortran)
+  else()
+    add_test(NAME ${pfx}${testname} COMMAND ${tgt})
+  endif()
+endmacro()
 
-add_executable(${exe} ${base_sources} )
-#target_include_directories(${exe} PRIVATE ${ADIOS2_INCLUDE_DIR}/fortran)
-target_include_directories(${exe} PRIVATE ${ADIOS2_INCLUDE_DIR_FORTRAN})
+fortran_add_test_helper(xmain ${mpi})
 
-target_link_libraries(${exe} PRIVATE ${ADIOS2_LIBRARIES} ${MPI_mpi_mpifh_LIBRARY})
-SET_TARGET_PROPERTIES(${exe}  PROPERTIES LINKER_LANGUAGE Fortran)
+#set(exe xmain_adios2)
 
-#!target_link_libraries(${exe} PRIVATE ${ADIOS2_LIBRARIES} MPI::MPI_Fortran) 
-#!SET_TARGET_PROPERTIES(${exe}  PROPERTIES LINKER_LANGUAGE Fortran)
+#add_executable(${exe} ${base_sources} )
+#target_include_directories(${exe} PRIVATE ${ADIOS2_INCLUDE_DIR_FORTRAN})
+
+#target_link_libraries(${exe} PRIVATE ${ADIOS2_LIBRARIES} ${MPI_mpi_mpifh_LIBRARY})
+#SET_TARGET_PROPERTIES(${exe}  PROPERTIES LINKER_LANGUAGE Fortran)
+
 
 
 		  

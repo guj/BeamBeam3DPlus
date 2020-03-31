@@ -1,22 +1,27 @@
-#set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-enable_language(Fortran)
+#------------------------------------------------------------------------------#
+# Distributed under the OSI-approved Apache License, Version 2.0.  See
+# accompanying file Copyright.txt for details.
+#------------------------------------------------------------------------------#
+
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+macro(fortran_add_test_helper testname mpi)
+  set(tgt adios2.${testname})
+  add_executable(${tgt} ${testname}.f90 main.f90)
+  set_target_properties(${tgt} PROPERTIES LINKER_LANGUAGE Fortran)
+  target_link_libraries(${tgt} sADIOS2)
+  if(mpi)
+    target_compile_definitions(${tgt} PRIVATE USE_MPI)
+    target_link_libraries(${tgt} MPI::MPI_Fortran)
+  else()
+    add_test(NAME ${pfx}${testname} COMMAND ${tgt})
+  endif()
+endmacro()
 
 
-set(sources 
-	    main.f90
-	    mod_tunefoot.f90)
+set(mpi TRUE)
 
-message(STATUS "..${ADIOS2_LIBRARIES}")
-
-set(exe tunefoot_adios2)
-add_executable(${exe} ${sources} )
-target_include_directories(${exe} PRIVATE ${ADIOS2_INCLUDE_DIR_FORTRAN})
-#!target_link_libraries(${exe} PRIVATE ${ADIOS2_LIBRARIES} MPI::MPI_Fortran) 
-#!SET_TARGET_PROPERTIES(${exe} PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(${exe} PRIVATE ${ADIOS2_LIBRARIES} ${MPI_mpi_mpifh_LIBRARY})
-SET_TARGET_PROPERTIES(${exe}  PROPERTIES LINKER_LANGUAGE Fortran)
+fortran_add_test_helper(mod_tunefoot ${mpi})
 
 
-
-		  
 
