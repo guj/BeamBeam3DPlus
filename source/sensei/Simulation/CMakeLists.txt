@@ -30,20 +30,32 @@ list(APPEND base_sources ${base_source_dir}/main.f90)
 list(APPEND base_sources Output.f90)
 
 message(STATUS "source: ${base_sources}")
-set(exe xmain_sensei)
 
-add_executable(${exe} ${base_sources} )
-#target_include_directories(${exe} PRIVATE ${SRC_BEAM})
-target_include_directories(${exe} PRIVATE ${SRC_FORTRAN})
-message(STATUS  "... fortran include: ${SRC_FORTRAN}")
+
+
+set(tgt sensei.xmain)
+add_executable(${tgt} ${base_sources})
+set_target_properties(${tgt} PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(${tgt} ${flib}) 
+
+target_compile_definitions(${tgt} PRIVATE USE_MPI)
+target_link_libraries(${tgt} MPI::MPI_Fortran)
+
+
+
+
+#set(exe xmain_sensei)
+#add_executable(${exe} ${base_sources} )
+
+#target_include_directories(${exe} PRIVATE ${SRC_FORTRAN})
+#xmessage(STATUS  "... fortran include: ${SRC_FORTRAN}")
 #
 # not using MPI::MPI_Fortran but only use the MPI_mpi_mpifh_LIBRARY
 # because the -flat_namespace would cause link error
 # and I do not know how not to set it.
 # 
-#target_link_libraries(${exe} PRIVATE ${LIB_BEAM_W} ${MPI_mpi_mpifh_LIBRARY}) 
-target_link_libraries(${exe} PRIVATE ${LIB_FORTRAN} ${MPI_mpi_mpifh_LIBRARY}) 
-SET_TARGET_PROPERTIES(${exe}  PROPERTIES LINKER_LANGUAGE Fortran)
+#target_link_libraries(${exe} PRIVATE ${LIB_FORTRAN} ${MPI_mpi_mpifh_LIBRARY}) 
+#SET_TARGET_PROPERTIES(${exe}  PROPERTIES LINKER_LANGUAGE Fortran)
 
 
 		  

@@ -31,10 +31,19 @@ target_include_directories(${flib}
 )
 
 
-target_link_libraries(${flib} PRIVATE ${senseiC})
+#target_link_libraries(${flib} PRIVATE ${senseiC})
+#target_link_libraries(${flib} PRIVATE MPI::MPI_C ${MPI_mpi_mpifh_LIBRARY})
 
-#target_link_libraries(${flib} PRIVATE MPI::MPI_Fortran MPI::MPI_C)
-target_link_libraries(${flib} PRIVATE MPI::MPI_C ${MPI_mpi_mpifh_LIBRARY})
+
+
+
+set_target_properties(${flib} PROPERTIES LINKER_LANGUAGE Fortran)
+#  target_link_libraries(${tgt} sADIOS2) 
+
+    target_compile_definitions(${flib} PRIVATE USE_MPI)
+#target_link_libraries(${flib} PRIVATE MPI::MPI_C MPI::MPI_Fortran sSENSEI)
+target_link_libraries(${flib} PRIVATE MPI::MPI_C MPI::MPI_Fortran ${senseiC})
+
 
 
 
@@ -42,10 +51,17 @@ target_link_libraries(${flib} PRIVATE MPI::MPI_C ${MPI_mpi_mpifh_LIBRARY})
 ### for testing purpose:
 #########################
 
-set(test_source test/simpleTest.f90)
+set(simpleTest_source test/simpleTest.f90)
 
-set(test_exe simpleTest)
 
-add_executable(${test_exe}  ${test_source})
+macro(fortran_add_test_helper testname)
+  set(tgt sensei.${testname})
+  add_executable(${tgt} ${simpleTest_source})
+  set_target_properties(${tgt} PROPERTIES LINKER_LANGUAGE Fortran)
+  target_link_libraries(${tgt} ${flib}) 
 
-target_link_libraries(${test_exe} PRIVATE ${flib} ${MPI_mpi_mpifh_LIBRARY}) 
+    target_compile_definitions(${tgt} PRIVATE USE_MPI)
+    target_link_libraries(${tgt} MPI::MPI_Fortran)
+endmacro()
+
+fortran_add_test_helper(simpleTest)

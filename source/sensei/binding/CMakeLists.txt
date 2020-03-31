@@ -9,11 +9,17 @@ set(senseiC_sources
 
 add_library(${senseiC} SHARED ${senseiC_sources} )
 
-target_include_directories(${senseiC} PRIVATE
-                                      ${SENSEI_INCLUDE_DIR} ${VTK_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
-find_package(MPI)
-target_link_libraries(${senseiC} PRIVATE
-                                 ${SENSEI_LIBRARIES} MPI::MPI_C sVTK  sHDF5 sADIOS2)
+
+#set_target_properties(${senseiC} PROPERTIES LINKER_LANGUAGE C)
+target_link_libraries(${senseiC} sSENSEI)     
+#    target_compile_definitions(${senseiC} PRIVATE USE_MPI)
+#    target_link_libraries(${senseiC} MPI::MPI_C)
+
+#target_include_directories(${senseiC} PRIVATE
+#                                      ${SENSEI_INCLUDE_DIR} ${VTK_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
+#find_package(MPI)
+#target_link_libraries(${senseiC} PRIVATE
+#                                 ${SENSEI_LIBRARIES} MPI::MPI_C sVTK  sHDF5 sADIOS2)
 
 set(SENSEI_C_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/c)
 
