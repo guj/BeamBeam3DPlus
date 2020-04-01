@@ -4,9 +4,9 @@
     
   <reader type="hdf5" file_name="beambeam3d.h5" method="n">
     <bunch value="0"/>
-    <turn start="0"  count="16" />
-    <ptl  start="0" count="1" />
-    <cols  value1="x" value2="y" /> <!-- lower case -->
+    <turn start="0"  count="3" />
+    <ptl  start="0" count="4" /> <!-- leave it fixed to be multile of 4-->
+    <cols  value1="y" value2="z" /> <!-- lower case -->
     <!-- <debug/>  -->
   </reader>
 </sensei>
