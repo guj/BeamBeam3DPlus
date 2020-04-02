@@ -28,11 +28,11 @@ It contains a sample input files:  beam1.in beam2.in + adios2-config.xml
 
 - Simulation:
 
-      mpirun -n 4 ../build-adios2/bin/adios2.xmain 
+      mpirun -n 4 ../../build-adios2/bin/adios2.xmain 
 
 - Analysis:
 
-      ./build-adios2/bin/adios2.mod_tunefoot
+      ../../build-adios2/bin/adios2.mod_tunefoot
   
   
 ===== FOR SENSEI ===
@@ -67,8 +67,8 @@ cd ../test/sensei
 
 - Simulation: (needs beam1.in beam2.in)
 
-  mpirun -n 4 ./build-sensei/bin/sensei.xmain
+      mpirun -n 4 ../../build-sensei/bin/sensei.xmain
   
 - Analysis:
 
-  ./build-sensei/bin/sensei.tune_foot
+      ../../build-sensei/bin/sensei.tune_foot
