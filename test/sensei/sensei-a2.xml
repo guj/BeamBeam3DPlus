@@ -1,11 +1,12 @@
 <sensei>
 
   <writer>
-    <transport type="hdf5" filename="beambeam3d.h5" method="n" enabled="1"/> 
+    <!-- <transport type="hdf5" filename="beambeam3d.h5" method="n" enabled="1"/> -->
+    <transport type="adios2" filename="test.bp" engine="BP4" enabled="1" />
   </writer>
     
   <reader>
-    <transport type="hdf5" file_name="beambeam3d.h5" method="n"/>
+    <transport type="adios2" filename="test.bp" method="bp4"/>
     <bunch value="0"/>
     <turn start="0"  count="3" />
     <ptl  start="0" count="4" /> <!-- leave it fixed to be multile of 4-->
