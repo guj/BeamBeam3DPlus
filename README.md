@@ -75,7 +75,10 @@ cd ../test/sensei
 
 
 
-==== about sensei.xml ====
-SUPOORTED transport type: hdf5 or adios2
-sample see sensei-h5.xml or sensei-a2.xml
-customize the filename and reader options (bunch, particles range, etc)
+==== About sensei.xml ====
+
+      - SUPOORTED transport type: hdf5 or adios2
+
+      - samples: see sensei-h5.xml or sensei-a2.xml
+
+      - users can customize the filename and reader options (bunch, particles range, etc)
