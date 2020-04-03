@@ -5,7 +5,7 @@ find_package(ADIOS2 REQUIRED)
 find_package(SENSEI REQUIRED)
 
   add_library(sSENSEI INTERFACE)
-  target_link_libraries(sSENSEI INTERFACE senseiCore)
+  target_link_libraries(sSENSEI INTERFACE senseiCore sensei)
   #install(TARGETS sADIOS2 EXPORT sADIOS2)
   #install(EXPORT sADIOS2 DESTINATION lib/cmake EXPORT_LINK_INTERFACE_LIBRARIES)
 

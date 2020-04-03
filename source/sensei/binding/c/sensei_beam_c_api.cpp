@@ -47,7 +47,7 @@ int SenseiHandleReader_getInput(SenseiHandleReader* reader,  uint64_t* nturns, u
   if (bunchID != NULL)
     *bunchID = reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetBunchID();
 
-  std::cout<<*nptls<<"  "<<*nturns<<"  "<<*bunchID<<std::endl;
+  //std::cout<<*nptls<<"  "<<*nturns<<"  "<<*bunchID<<std::endl;
   return 0;
   //return reader->InitializeXML(name);
 }
@@ -79,8 +79,6 @@ uint64_t SenseiHandleReader_nTurns(SenseiHandleReader* reader)
     return 0;
   }
 
-  printf("##DEBUG: Num PARTICLES: %llu\n", reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetNumParticles());
-  printf("##DEBUG: Num TURNS: %llu\n", reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetNumTurns());
   //return reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetTurnsRead();
   return reinterpret_cast<VTKBeamBeam3DReader*>(reader)->GetNumTurns();
   //return reader->GetTurnsRead();

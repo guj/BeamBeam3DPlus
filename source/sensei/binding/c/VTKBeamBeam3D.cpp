@@ -40,12 +40,14 @@ VTKBeamBeam3DWriter::VTKBeamBeam3DWriter(MPI_Comm comm)
   MPI_Comm_rank(comm, &m_Rank);
   MPI_Comm_size(comm, &m_Size);
 
-  m_Writer = sensei::HDF5AnalysisAdaptor::New();
+  //m_Writer = sensei::HDF5AnalysisAdaptor::New()
+  m_Writer = SenseiAnalysisAdaptorPtr::New();
 }
 
 
 bool VTKBeamBeam3DWriter::InitializeXML(const char* xmlname)
 {
+
   pugi::xml_document doc;
   if (sensei::XMLUtils::Parse(m_Comm, xmlname, doc))
     {
@@ -55,7 +57,7 @@ bool VTKBeamBeam3DWriter::InitializeXML(const char* xmlname)
     }
 
   pugi::xml_node node = doc.child("sensei").child("writer");
-
+  /*
   pugi::xml_attribute filename = node.attribute("filename");
   pugi::xml_attribute methodAttr = node.attribute("method");
 
@@ -81,13 +83,18 @@ bool VTKBeamBeam3DWriter::InitializeXML(const char* xmlname)
     }
 
   return true;
+  */
+  m_Writer->Initialize(node);
+  return true;
 }
+
 
 
 VTKBeamBeam3DWriter::VTKBeamBeam3DWriter(MPI_Comm comm, const char* name)
   :m_Comm(comm), 
    m_MeshName("particles")
-{  
+{
+  /*  
   if (comm == MPI_COMM_NULL)
     comm = MPI_COMM_WORLD;
 
@@ -102,13 +109,28 @@ VTKBeamBeam3DWriter::VTKBeamBeam3DWriter(MPI_Comm comm, const char* name)
   bool doStreaming = false;
   bool doCollective = true;
   //m_FID = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT,  H5P_DEFAULT); 
-  m_Writer = sensei::HDF5AnalysisAdaptor::New();
+  //m_Writer = sensei::HDF5AnalysisAdaptor::New();
+  m_Writer = sensei::ConfigurableAnalysis::New();
   m_Writer->SetStreamName(name);
   m_Writer->SetStreaming(doStreaming);
   m_Writer->SetCollective(doCollective);
 
   m_Writer->SetCommunicator(comm);
+  */
+  /* NOTE::
+   * change of SEMANTICS: name is now xml file name
+   */
+  if (comm == MPI_COMM_NULL)
+    comm = MPI_COMM_WORLD;
+
+  MPI_Comm_rank(comm, &m_Rank);
+  MPI_Comm_size(comm, &m_Size);
+
+  //m_Writer = sensei::HDF5AnalysisAdaptor::New()                                                                                      
+  m_Writer = SenseiAnalysisAdaptorPtr::New();
+  InitializeXML(name);
 }
+
 
 //VTKBeamBeam3DWriter::VTKBeamBeam3DWriter(int _a, int _b): a(_a), b(_b){
 //cout << "C++ side, constructor" << endl;
@@ -117,7 +139,7 @@ VTKBeamBeam3DWriter::VTKBeamBeam3DWriter(MPI_Comm comm, const char* name)
 VTKBeamBeam3DWriter::~VTKBeamBeam3DWriter()
 {
   m_Writer->Finalize();
-  m_Writer->Delete();
+  //?? m_Writer->Delete();
 }
 
 /*
@@ -166,7 +188,7 @@ int VTKBeamBeam3DWriter::writeAttr(int bunchID, const std::string& attrName, dou
   temp->SetNumberOfComponents(1);
   temp->SetNumberOfTuples(nCells);
   
-  for (int i = 0; i < nCells; i++)
+  for (unsigned long i = 0; i < nCells; i++)
     {
       temp->SetTuple1(i, attrData[i]);
     }  
@@ -197,7 +219,7 @@ int VTKBeamBeam3DWriter::writePtl(int bunchID, double* data)
   
   vtkImageData *im = vtkImageData::New();
   im->SetExtent(bunchID, bunchID, m_Start, m_Start + m_Count, 0, 6);
-  //std::cout<<m_Rank<<" bid="<<bid<<" bunchid="<<bunchID<<"   "<<m_Start<<"  "<<m_Start+m_Count<<std::endl;
+  std::cout<<m_Rank<<" bid="<<bid<<" bunchid="<<bunchID<<"   "<<m_Start<<"  "<<m_Start+m_Count<<std::endl;
   unsigned long nx = 1;
   unsigned long ny = m_Count;
   unsigned long nz = 6;
@@ -214,7 +236,7 @@ int VTKBeamBeam3DWriter::writePtl(int bunchID, double* data)
   temp->SetNumberOfComponents(1);
   temp->SetNumberOfTuples(nCells);
   
-  for (int i = 0; i < nCells; i++)
+  for (unsigned long i = 0; i < nCells; i++)
     {
       temp->SetTuple1(i, data[i]);
     }  
@@ -337,7 +359,8 @@ VTKBeamBeam3DReader::VTKBeamBeam3DReader(MPI_Comm comm)
   MPI_Comm_rank(comm, &m_Rank);
   MPI_Comm_size(comm, &m_Size);
 
-  m_Reader = sensei::HDF5DataAdaptor::New();
+  //m_Reader = sensei::HDF5DataAdaptor::New();
+  m_Reader = SenseiDataAdaptorPtr::New();
 }
 
 
@@ -354,7 +377,7 @@ VTKBeamBeam3DReader::VTKBeamBeam3DReader(MPI_Comm comm, const char* name)
   if (m_Rank == 0) 
     std::cout<<"name = "<<name<<std::endl;
 
-
+  /*
   bool doStreaming = false;
   bool doCollective = false;
   m_Reader  = H5DataAdaptorPtr::New();
@@ -363,11 +386,18 @@ VTKBeamBeam3DReader::VTKBeamBeam3DReader(MPI_Comm comm, const char* name)
   m_Reader->SetStreaming(doStreaming);
   m_Reader->SetCollective(doCollective);
   m_Reader->SetStreamName(name);
+  */
+  /*
+   * CHANGE of SEMANTICS: name => xml name
+   */
+  m_Reader = SenseiDataAdaptorPtr::New();
+  InitializeXML(name);
+
 }
 
 VTKBeamBeam3DReader::~VTKBeamBeam3DReader()
 {
-  m_Reader->Delete();
+  //m_Reader->Delete();
 }
 
 bool VTKBeamBeam3DReader::isValidTurn(uint32_t t, uint32_t base) 
@@ -379,7 +409,7 @@ bool VTKBeamBeam3DReader::isValidTurn(uint32_t t, uint32_t base)
 
 
 bool  VTKBeamBeam3DReader::InitializeXML(const char* filename)
-{
+{    
   pugi::xml_document doc;
   if (sensei::XMLUtils::Parse(m_Comm, filename, doc))
     {
@@ -395,10 +425,15 @@ bool  VTKBeamBeam3DReader::InitializeXML(const char* filename)
       std::cout<<" !ERROR: Expecting xml node <reader> under root <sensei>"<<std::endl;
     return false;
   }
-
+#ifdef NEVER
   if (m_Reader->Initialize(root))
     return false;
-
+#else
+  //m_Reader->Initialize(filename);
+  if (m_Reader->Initialize(root))
+    return false;
+#endif  
+  
   pugi::xml_node cols = root.child("cols");
   if (cols) {    
     pugi::xml_attribute v1 = cols.attribute("value1");

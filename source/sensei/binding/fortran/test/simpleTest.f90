@@ -116,13 +116,17 @@ program testSenseiBeam
 
   call sensei_r_get_data(senseiR, d1, d2, ierr)
 
-  write (*,'(4F10.4)') d1
-  write (*,*)
-  write (*,'(4F10.4)') d2
+  write (*,*) ierr;
+
+  if (ierr .ge. 1) then
+     write (*,'(4F10.4)') d1
+     write (*,*)
+     write (*,'(4F10.4)') d2
   
-  !!verify d1, d2 and then put them to data1 data2 before passing to FFT
-  deallocate(d1); 
-  deallocate(d2); 
+     !!verify d1, d2 and then put them to data1 data2 before passing to FFT
+     deallocate(d1); 
+     deallocate(d2); 
+  endif
 
   call sensei_r_close(senseiR, ierr)
   call MPI_Finalize(ierr);

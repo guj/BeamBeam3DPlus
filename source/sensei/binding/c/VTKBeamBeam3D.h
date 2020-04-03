@@ -1,9 +1,12 @@
 #include <string>
 #include <mpi.h>
 
+#include "ConfigurableInTransitDataAdaptor.h"
+#include "ConfigurableAnalysis.h"
+
 #include "VTKDataAdaptor.h"
-#include "HDF5DataAdaptor.h"
-#include "HDF5AnalysisAdaptor.h"
+//#include "HDF5DataAdaptor.h"
+//#include "HDF5AnalysisAdaptor.h"
 #include <vtkMultiBlockDataSet.h>
 #include <vtkImageData.h>
 #include <vtkCellData.h>
@@ -12,23 +15,11 @@
 #include <vtkCompositeDataIterator.h>
 #include "XMLUtils.h"
 
-using H5AnalysisAdaptorPtr = vtkSmartPointer<sensei::HDF5AnalysisAdaptor>;
-using H5DataAdaptorPtr = vtkSmartPointer<sensei::HDF5DataAdaptor>;
-/*
-class VTKBeamBeam3D
-{
- public:
-  VTKBeamBeam3D(MPI_Comm comm, const char* name);
+//using H5AnalysisAdaptorPtr = vtkSmartPointer<sensei::HDF5AnalysisAdaptor>;
+//using H5DataAdaptorPtr = vtkSmartPointer<sensei::HDF5DataAdaptor>;
+using SenseiAnalysisAdaptorPtr = vtkSmartPointer<sensei::ConfigurableAnalysis>;
+using SenseiDataAdaptorPtr = vtkSmartPointer<sensei::ConfigurableInTransitDataAdaptor>;
 
-  int bar(int c) const;
-  int baz(double* d) const;
-
- private:
-  int a;
-  int b;
-
-};
-*/
 class VTKBeamBeam3DReader 
 {
 public:
@@ -63,7 +54,8 @@ public:
   uint64_t m_NumPtlPerTurn = 0;
  private:
 
-  H5DataAdaptorPtr m_Reader;
+  //H5DataAdaptorPtr m_Reader;
+  SenseiDataAdaptorPtr m_Reader;
   uint64_t readMultiBlock(vtkMultiBlockDataSet* ds, sensei::MeshMetadataPtr mmd);
   bool isValidTurn(uint32_t t, uint32_t base);
   MPI_Comm m_Comm;
@@ -115,7 +107,8 @@ public:
 private:
   MPI_Comm m_Comm;
   
-  H5AnalysisAdaptorPtr m_Writer;
+  //H5AnalysisAdaptorPtr m_Writer;
+  SenseiAnalysisAdaptorPtr m_Writer;
 
   std::string m_MeshName;
   vtkSmartPointer<vtkMultiBlockDataSet> m_Mesh;
