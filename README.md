@@ -4,25 +4,26 @@ Extending BeamBeam3D code with I/O options
 PREREQUEST:  module load cmake
 
 ==== For ADIOS2 ===
+
 PREREQUEST:  install adios2:
+
       git clone https://github.com/ornladios/ADIOS2
       
-      
-=> How to build:
+=> How to build with adios2:
 
-export ADIOS2_DIR=<YOUR/ADIOS2/INSTALL/>
+      export ADIOS2_DIR=<YOUR/ADIOS2/INSTALL/>
 
-mkdir build-adios2
+      mkdir build-adios2
 
-cd build-adios2
+      cd build-adios2
 
-cmake ../source/adios2
+      cmake ../source/adios2
 
-make 
+      make 
 
 => To Test:   
 
-cd ../test/adios2 
+      cd ../test/adios2 
  
 It contains a sample input files:  beam1.in beam2.in + adios2-config.xml
 
