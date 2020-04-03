@@ -44,23 +44,23 @@ PREREQUEST: install sensei:
   
 => How to build:
 
-export SENSEI_DIR=/YOUR/SENSEI/INSTALL/lib/cmake/
+      export SENSEI_DIR=/YOUR/SENSEI/INSTALL/lib/cmake/
 
-(NOTE: may need to export ADIOS2_DIR=<YOUR/ADIOS2/INSTALL> if you used ADIOS2 in SENSEI)
+      (NOTE: need to export ADIOS2_DIR=<YOUR/ADIOS2/INSTALL> if you used ADIOS2 in SENSEI)
 
-(NOTE: same goes for HDF5)
+      (NOTE: same goes for HDF5)
 
-mkdir build-sensei
+      mkdir build-sensei
 
-cd build-sensei
+      cd build-sensei
 
-cmake ../source/sensei
+      cmake ../source/sensei
 
-make
+      make
 
 => To test
 
-cd ../test/sensei
+      cd ../test/sensei
 
 - A simple fortran test: (needs sensei.xml to be present) 
 
@@ -73,7 +73,6 @@ cd ../test/sensei
 - Analysis:
 
       ../../build-sensei/bin/sensei.tune_foot
-
 
 
 ==== About sensei.xml ====
