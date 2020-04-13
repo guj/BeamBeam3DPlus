@@ -1,15 +1,14 @@
 <sensei>
 
   <writer>
-    <!-- <transport type="hdf5" filename="beambeam3d.h5" method="n" enabled="1"/> -->
-    <transport type="adios2" filename="test.bp" engine="BP4" enabled="1" />
+    <transport type="adios2" filename="beambeam3d.bp" method="bp4" enabled="1"/> 
   </writer>
     
   <reader>
-    <transport type="adios2" filename="test.bp" method="bp4"/>
+    <transport type="adios2" filename="beambeam3d.bp" method="bp4"/>
     <bunch value="0"/>
-    <turn start="0"  count="3" />
-    <ptl  start="0" count="4" /> <!-- leave it fixed to be multile of 4-->
+    <turn start="0"  count="16" /> <!-- must be multile of 4-->
+    <ptl  start="0" count="17" /> 
     <cols  value1="y" value2="z" /> <!-- lower case -->
     <!-- <debug/>  -->
   </reader>
