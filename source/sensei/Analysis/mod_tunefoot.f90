@@ -39,8 +39,6 @@ MODULE SENSEI_TUNEFOOT
       !ptlPerTurn = sensei_r_get_ptls(senseiR);
       !numTurns = sensei_r_get_nturns(senseiR);
 
-      write (*,*) numTurns, ptlPerTurn
-
       allocate(data1(numTurns, ptlPerTurn));
       allocate(data2(numTurns, ptlPerTurn));
 
@@ -56,8 +54,9 @@ MODULE SENSEI_TUNEFOOT
 
       ptls = ptlPerTurn
       if (ptls > 0) then
-         write(*,*) data1(1:6,1)
-         write(*,*) data2(1:6,1)
+         !write(*,*) data1(1:6,1)
+         write(*,'(6e15.5)') data1(1:6,1)
+         write(*,'(6e15.5)') data2(1:6,1)
 
          allocate(tune1(ptls)); 
          allocate(tune2(ptls)); 
@@ -84,7 +83,6 @@ MODULE SENSEI_TUNEFOOT
 
     end SUBROUTINE tunefoot_run_xml
 
-    
 
     !----------------------------------------------------------------------------!
     !find the working points (tunes) for npt points with M turns.
@@ -92,8 +90,8 @@ MODULE SENSEI_TUNEFOOT
     !----------------------------------------------------------------------------!
       implicit none
       integer :: M,npt
-      real*8, dimension(M,npt) :: xtr,ytr
-      real*8, dimension(npt) :: tunex,tuney
+      real*8, dimension(M,npt), intent(in) :: xtr,ytr
+      real*8, dimension(npt), intent(out)  :: tunex,tuney
       real*8 data1(M)
       real power(M/2)
       double complex output(M)
@@ -104,7 +102,6 @@ MODULE SENSEI_TUNEFOOT
       integer :: Nloop,ilp
       real*8 :: pamp1,xfrqmin,xfrqmax,xfrq,frqkick
       real*8 :: xfrqmin1,xfrqmin2,xfrqmax1,xfrqmax2
-      write(*,*) "M=",M, " npt=",npt
       unit = 1.0
       zero = 0
       sign = 1
@@ -134,7 +131,6 @@ MODULE SENSEI_TUNEFOOT
 
 
         call realft(data1,M,isign)
-        !write(*,*) "out=>", data1(1:10)
         output = 0.0
         output(1) = dcmplx(data1(1),0)
         output(M/2+1) = dcmplx(data1(2),0)
