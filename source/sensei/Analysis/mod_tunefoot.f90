@@ -55,6 +55,7 @@ MODULE SENSEI_TUNEFOOT
       ptls = ptlPerTurn
       if (ptls > 0) then
          !write(*,*) data1(1:6,1)
+         write (*,*) "Here are values at first 6 TURNS for the FIRST particle on the two designed attributes:";
          write(*,'(6e15.5)') data1(1:6,1)
          write(*,'(6e15.5)') data2(1:6,1)
 
