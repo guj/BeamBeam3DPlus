@@ -23,7 +23,7 @@ program main
   !xPos = 0; 
   !yPos = 2
 
-  !call tunefoot_run(xPos, yPos) 
+  !call tunefoot_run(xPos, yPos)
   call tunefoot_run_xml(MPI_COMM_WORLD, ierr)
   call MPI_Finalize(ierr);
 
