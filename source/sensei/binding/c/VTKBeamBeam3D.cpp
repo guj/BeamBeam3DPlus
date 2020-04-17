@@ -6,29 +6,6 @@
 
 using namespace std;
 
-/*
-
-class ParticlesStrucured
-{
-  vtkImageData*  SaveBlock(unsigned long bunchID, unsigned long start, unsigned long count)
-  {
-    vtkImageData *im = vtkImageData::New();
-    im->SetExtent(bunchID, bunchID, ptlStart, ptlStart + ptlCount-1, 0, 5);
-    unsigned long nx = 1;
-    unsigned long ny = ptlCount1;
-    unsigned long nz = 6;
-    //unsigned long npts = (nx + 1) * (ny + 1) * (nz + 1);
-    //get_data_arrays(npts, im->GetPointData());
-    
-    unsigned long ncells = nx * ny * nz;
-    
-    get_data_arrays(ncells, im->GetCellData());
-    
-    return im;
-  }
-  
-};
-*/
 
 VTKBeamBeam3DWriter::VTKBeamBeam3DWriter(MPI_Comm comm)
   :m_Comm(comm),
@@ -40,7 +17,6 @@ VTKBeamBeam3DWriter::VTKBeamBeam3DWriter(MPI_Comm comm)
   MPI_Comm_rank(comm, &m_Rank);
   MPI_Comm_size(comm, &m_Size);
 
-  //m_Writer = sensei::HDF5AnalysisAdaptor::New()
   m_Writer = SenseiAnalysisAdaptorPtr::New();
 }
 
@@ -57,33 +33,7 @@ bool VTKBeamBeam3DWriter::InitializeXML(const char* xmlname)
     }
 
   pugi::xml_node node = doc.child("sensei").child("writer");
-  /*
-  pugi::xml_attribute filename = node.attribute("filename");
-  pugi::xml_attribute methodAttr = node.attribute("method");
 
-  if (filename)
-    m_Writer->SetStreamName(filename.value());
-  else {
-    SENSEI_ERROR("Failed to proceed without attribute: filename")
-    return false;
-  }
-
-  if (methodAttr)
-    {
-      std::string method = methodAttr.value();
-
-      if (method.size() > 0)
-        {
-          bool doStreaming = ('s' == method[0]);
-          bool doCollectiveTxf = ((method.size() > 1) && ('c' == method[1]));
-
-          m_Writer->SetStreaming(doStreaming);
-          m_Writer->SetCollective(doCollectiveTxf);
-        }
-    }
-
-  return true;
-  */
   m_Writer->Initialize(node);
   return true;
 }
@@ -94,29 +44,6 @@ VTKBeamBeam3DWriter::VTKBeamBeam3DWriter(MPI_Comm comm, const char* name)
   :m_Comm(comm), 
    m_MeshName("particles")
 {
-  /*  
-  if (comm == MPI_COMM_NULL)
-    comm = MPI_COMM_WORLD;
-
-  //MPI_Init(NULL, NULL);
-  MPI_Comm_rank(comm, &m_Rank);
-  MPI_Comm_size(comm, &m_Size);
-
-  if (m_Rank == 0) 
-    std::cout<<"name = "<<name<<std::endl;
-
-
-  bool doStreaming = false;
-  bool doCollective = true;
-  //m_FID = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT,  H5P_DEFAULT); 
-  //m_Writer = sensei::HDF5AnalysisAdaptor::New();
-  m_Writer = sensei::ConfigurableAnalysis::New();
-  m_Writer->SetStreamName(name);
-  m_Writer->SetStreaming(doStreaming);
-  m_Writer->SetCollective(doCollective);
-
-  m_Writer->SetCommunicator(comm);
-  */
   /* NOTE::
    * change of SEMANTICS: name is now xml file name
    */
@@ -126,7 +53,6 @@ VTKBeamBeam3DWriter::VTKBeamBeam3DWriter(MPI_Comm comm, const char* name)
   MPI_Comm_rank(comm, &m_Rank);
   MPI_Comm_size(comm, &m_Size);
 
-  //m_Writer = sensei::HDF5AnalysisAdaptor::New()                                                                                      
   m_Writer = SenseiAnalysisAdaptorPtr::New();
   InitializeXML(name);
 }
@@ -700,6 +626,9 @@ bool VTKBeamBeam3DReader::readPtlSerial() //double* data1, double* data2)
       if ((m_Rank == 0) && m_Debug)
 	std::cout << "\n===> Received step: " << it << " time: " << t<< ". Assigned turn range: "<<m_SelectionTurnStart<<", "<<m_SelectionTurnCount<<std::endl;      
 
+      if (it > m_SelectionTurnStart + m_SelectionTurnCount)
+	break;
+      
       if (isValidTurn(it, base)) {      
 	m_TurnsRead ++;
 	unsigned int nMeshes;
