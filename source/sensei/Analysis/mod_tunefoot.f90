@@ -26,76 +26,107 @@ MODULE SENSEI_TUNEFOOT
 
       call sensei_r_init(senseiR, comm, char(0), ierr);
       call sensei_r_get_input(senseiR, readInNumTurns, readInNptls, bunchID);
-
-      allocate(d1(readInNumTurns * readInNptls))
-      allocate(d2(readInNumTurns * readInNptls))
-
-      call sensei_r_get_data(senseiR, d1, d2, ierr);     
-
-      call sensei_r_get_params(senseiR, numTurns, ptlPerTurn);
-
-      nTurns_I4 = numTurns;
-      ptl_I4 = ptlPerTurn;
-      !ptlPerTurn = sensei_r_get_ptls(senseiR);
-      !numTurns = sensei_r_get_nturns(senseiR);
-
-      allocate(data1(numTurns, ptlPerTurn));
-      allocate(data2(numTurns, ptlPerTurn));
-
-      do i=1, numTurns
-         data1(i, :) = d1(1+(i-1)*ptlPerTurn:i*ptlPerTurn)
-         data2(i, :) = d2(1+(i-1)*ptlPerTurn:i*ptlPerTurn)
-      enddo
-
-      deallocate(d1); 
-      deallocate(d2); 
-
-      write(*,*) "checking: turns/npts::", numTurns, ptlPerTurn
-
-      ptls = ptlPerTurn
-      if (ptls > 0) then
-         !write(*,*) data1(1:6,1)
-         write (*,*) "Here are values at first 6 TURNS for the FIRST particle on the two designed attributes:";
-         write(*,'(6e15.5)') data1(1:6,1)
-         write(*,'(6e15.5)') data2(1:6,1)
-
-         allocate(tune1(ptls)); 
-         allocate(tune2(ptls)); 
-
-         call footprint(data1, data2,tune1,tune2, nTurns_I4, ptl_I4);      
-
-         do i = 1, ptls
-            write(4,*)tune1(i),tune2(i)
-         enddo      
-
-         deallocate(tune1)
-         deallocate(tune2)
-
-      else
-         if (m_rank == 0) then
-            write(*,*) "no ptls retrieved. bye!"
-         endif
-      endif
       
-      deallocate(data1)
-      deallocate(data2)
+      call isNotPowerOfTwo(readInNumTurns, ierr);
+      if (ierr > 0) then
+         write(*,*) "Error: num  of turns needs to be power of 2."
+      else
+         allocate(d1(readInNumTurns * readInNptls))
+         allocate(d2(readInNumTurns * readInNptls))
+         
+         call sensei_r_get_data(senseiR, d1, d2, ierr);     
+         
+         call sensei_r_get_params(senseiR, numTurns, ptlPerTurn);
 
+         if (numTurns <  readInNumTurns)  then
+            write (*,*) "Not enough turns. "
+            deallocate(d1)
+            deallocate(d2)
+            return;
+         endif
+         write(*,*) "matched"
+         
+         nTurns_I4 = numTurns;
+         ptl_I4 = ptlPerTurn;
+         !ptlPerTurn = sensei_r_get_ptls(senseiR);
+         !numTurns = sensei_r_get_nturns(senseiR);
+         
+         allocate(data1(numTurns, ptlPerTurn));
+         allocate(data2(numTurns, ptlPerTurn));
+         
+         do i=1, numTurns
+            data1(i, :) = d1(1+(i-1)*ptlPerTurn:i*ptlPerTurn)
+            data2(i, :) = d2(1+(i-1)*ptlPerTurn:i*ptlPerTurn)
+         enddo
+
+         deallocate(d1); 
+         deallocate(d2); 
+
+      
+         write(*,*) "checking: turns/npts::", numTurns, ptlPerTurn
+         
+         ptls = ptlPerTurn
+         if ((ptls > 0)) then
+            !write(*,*) data1(1:6,1)
+            write (*,*) "Here are values at first 6 TURNS for the FIRST particle on the two designed attributes:";
+            write(*,'(6e15.5)') data1(1:6,1)
+            write(*,'(6e15.5)') data2(1:6,1)
+            
+            allocate(tune1(ptls)); 
+            allocate(tune2(ptls)); 
+            
+            call footprint(data1, data2,tune1,tune2, nTurns_I4, ptl_I4);      
+            
+            do i = 1, ptls
+               write(4,*)tune1(i),tune2(i)
+            enddo
+            
+            deallocate(tune1)
+            deallocate(tune2)
+            
+         else
+            if (m_rank == 0) then
+               write(*,*) "no ptls retrieved. bye!"
+            endif
+         endif
+         
+         deallocate(data1)
+         deallocate(data2)
+      endif  ! isNotPowerOf2
       call sensei_r_close(senseiR, ierr)
 
     end SUBROUTINE tunefoot_run_xml
 
 
+    recursive subroutine isNotPowerOfTwo(n, ierr)
+      integer*8, intent(in) :: n
+      integer, intent(out) :: ierr
+      ierr = 0;
+      if (n .eq. 2) then
+         return
+      endif
+      if (mod(n,2) == 1) then
+         ierr = 1
+      else
+         call isNotPowerOfTwo(n/2, ierr);
+      endif
+    end SUBROUTINE isNotPowerOfTwo
+    
     !----------------------------------------------------------------------------!
     !find the working points (tunes) for npt points with M turns.
     subroutine footprint(xtr,ytr,tunex,tuney,M,npt) 
     !----------------------------------------------------------------------------!
       implicit none
-      integer :: M,npt
+      integer :: M,npt     
       real*8, dimension(M,npt), intent(in) :: xtr,ytr
       real*8, dimension(npt), intent(out)  :: tunex,tuney
-      real*8 data1(M)
-      real power(M/2)
-      double complex output(M)
+      !real*8 data1(M)
+      !real power(M/2)
+      real,   allocatable, dimension(:) ::  power
+      real*8, allocatable, dimension(:) ::  data1
+      
+      !double complex output(M)
+      double complex, allocatable, dimension(:) ::output
       integer :: i, zero, sign,nn,isign
       real :: unit,pi,deltat,a,b,x1,x2,x3,x4,x5,x6,x7
       real :: y1,y2,y3,y4,y5,y6,y7,scale,zz 
@@ -121,11 +152,14 @@ MODULE SENSEI_TUNEFOOT
       xfrqmax2 = 0.5
 
       allocate(btf(2,Nloop))
+      allocate(data1(M))
+      allocate(power(M/2))
+      allocate(output(M))
 
       xfrqmin = xfrqmin1
       xfrqmax = xfrqmax1
-      do ilp = 1, Nloop
 
+      do ilp = 1, Nloop
         do i = 1, M
           data1(i) = xtr(i,ilp) 
         enddo
@@ -145,8 +179,8 @@ MODULE SENSEI_TUNEFOOT
         enddo
 
         if(ilp.eq.2) then
-          do i = 1, M/2
-            write(2,*) (i-1)/(M*deltat),"  ",power(i)
+           do i = 1, M/2
+              write(2,*) (i-1)/(M*deltat),"  ",power(i)
           enddo
         endif
 
@@ -162,7 +196,7 @@ MODULE SENSEI_TUNEFOOT
           endif
         enddo
         tunex(ilp) = btf(1,ilp)
-      enddo
+     enddo
 
       xfrqmin = xfrqmin2
       xfrqmax = xfrqmax2
@@ -201,18 +235,22 @@ MODULE SENSEI_TUNEFOOT
              endif
           endif
         enddo
-        tuney(ilp) = btf(1,ilp)
+        tuney(ilp) = btf(1,ilp)     
       enddo
 
+      deallocate(output)
+      deallocate(power)
+      deallocate(data1)
       deallocate(btf)
+      
 
       end subroutine footprint
 
     !----------------------------------------------------------------------------!
     SUBROUTINE realft(data,n,isign)
     !----------------------------------------------------------------------------!
-      INTEGER isign,n
-      REAL*8 data(n)
+      INTEGER, intent(in):: isign,n
+      REAL*8, intent(inout) :: data(n)
       INTEGER i,i1,i2,i3,i4,n2p3
       REAL*8 c1,c2,h1i,h1r,h2i,h2r,wis,wrs
       DOUBLE PRECISION theta,wi,wpi,wpr,wr,wtemp
