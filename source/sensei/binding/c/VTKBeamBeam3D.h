@@ -67,6 +67,8 @@ public:
 
   uint32_t m_SelectionTurnStart=0;
   uint32_t m_SelectionTurnCount=0;
+  uint32_t m_TurnRepeat = 0;
+  uint32_t m_TurnRepeatCounter = 0; 
 
   //uint32_t m_SelectionPos1=0;
   //uint32_t m_SelectionPos2=0;

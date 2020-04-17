@@ -25,27 +25,41 @@ MODULE SENSEI_TUNEFOOT
       type(SenseiBeamReader) :: senseiR  
 
       call sensei_r_init(senseiR, comm, char(0), ierr);
-      call sensei_r_get_input(senseiR, readInNumTurns, readInNptls, bunchID);
+      write(*,*) "check init",  ierr
+      if (ierr < 1) then
+         return;
+      endif
       
+      call sensei_r_get_input(senseiR, readInNumTurns, readInNptls, bunchID);      
       call isNotPowerOfTwo(readInNumTurns, ierr);
+      
       if (ierr > 0) then
          write(*,*) "Error: num  of turns needs to be power of 2."
       else
+         do while (readInNumTurns > 0)
+            write(*,*) ".... Getting data"
          allocate(d1(readInNumTurns * readInNptls))
          allocate(d2(readInNumTurns * readInNptls))
          
          call sensei_r_get_data(senseiR, d1, d2, ierr);     
-         
+
+         if (ierr < 1) then
+            deallocate(d1)
+            deallocate(d2)
+            call sensei_r_close(senseiR, ierr);
+            return;
+         endif
+        
          call sensei_r_get_params(senseiR, numTurns, ptlPerTurn);
 
          if (numTurns <  readInNumTurns)  then
-            write (*,*) "Not enough turns. "
+            write (*,*) "Not enough turns. ", numTurns
             deallocate(d1)
             deallocate(d2)
+            call sensei_r_close(senseiR, ierr);
             return;
          endif
-         write(*,*) "matched"
-         
+
          nTurns_I4 = numTurns;
          ptl_I4 = ptlPerTurn;
          !ptlPerTurn = sensei_r_get_ptls(senseiR);
@@ -61,13 +75,11 @@ MODULE SENSEI_TUNEFOOT
 
          deallocate(d1); 
          deallocate(d2); 
-
       
          write(*,*) "checking: turns/npts::", numTurns, ptlPerTurn
          
          ptls = ptlPerTurn
          if ((ptls > 0)) then
-            !write(*,*) data1(1:6,1)
             write (*,*) "Here are values at first 6 TURNS for the FIRST particle on the two designed attributes:";
             write(*,'(6e15.5)') data1(1:6,1)
             write(*,'(6e15.5)') data2(1:6,1)
@@ -89,10 +101,11 @@ MODULE SENSEI_TUNEFOOT
                write(*,*) "no ptls retrieved. bye!"
             endif
          endif
-         
          deallocate(data1)
          deallocate(data2)
+      enddo !!  loop
       endif  ! isNotPowerOf2
+   
       call sensei_r_close(senseiR, ierr)
 
     end SUBROUTINE tunefoot_run_xml

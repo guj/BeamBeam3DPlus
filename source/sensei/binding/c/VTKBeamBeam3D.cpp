@@ -323,6 +323,7 @@ VTKBeamBeam3DReader::VTKBeamBeam3DReader(MPI_Comm comm, const char* name)
 
 VTKBeamBeam3DReader::~VTKBeamBeam3DReader()
 {
+  m_Reader->CloseStream();
   //m_Reader->Delete();
 }
 
@@ -387,7 +388,22 @@ bool  VTKBeamBeam3DReader::InitializeXML(const char* filename)
     uint32_t tStart=0; p1 >> tStart;
     uint32_t tCount=0; p2 >> tCount;
 
-    if (m_Rank == 0) std::cout<<"Input turnID:\t"<<tStart<<" "<<tCount<<std::endl;
+    pugi::xml_attribute vr = turn.attribute("repeat");
+    if (vr) {
+      std::stringstream pr(vr.value());
+      pr >> m_TurnRepeat;
+      // m_TurnRepeat: 0(no repeat)  1(keep repeating)      
+    }
+
+    std::string repeatExplanation = "(No repeat)";
+    if (m_TurnRepeat == 1)
+      repeatExplanation = "(keep repeating)";
+    else if (m_TurnRepeat > 1)
+      repeatExplanation = "(max repeating time)";
+    
+    if (m_Rank == 0)
+      std::cout<<"Input turnID:\t"<<tStart<<" "<<tCount<<"  repeat="<<m_TurnRepeat<<repeatExplanation<<std::endl;
+    
     setTurnRange(tStart, tCount);
   }
 
@@ -408,6 +424,24 @@ bool  VTKBeamBeam3DReader::InitializeXML(const char* filename)
   if (debug)
     m_Debug = true;
 
+
+
+  if (m_SelectionColName1.compare(m_SelectionColName2) == 0) {
+    showError("Please select which attrs to read.");
+    return false;
+  }
+  if (0 == m_SelectionParticleCount) {
+    showError("Please select number of particles to read.");
+    return false;
+  }
+  if (0 == m_SelectionTurnCount) {
+    showError("Please select number of turns to read.");
+    return false;
+  }
+
+
+  std::cout<<" ... OK ... opening stream:"<<std::endl;
+  m_Reader->OpenStream();
   return true;
 }
 
@@ -585,20 +619,7 @@ bool VTKBeamBeam3DReader::readPtl(double* data1, double* data2)
     showError("Please allocate data first.");
     return false;
   }
-
-  if (m_SelectionColName1.compare(m_SelectionColName2) == 0) {
-    showError("Please select which attrs to read.");
-    return false;
-  }
-  if (0 == m_SelectionParticleCount) {
-    showError("Please select number of particles to read.");
-    return false;
-  }
-  if (0 == m_SelectionTurnCount) {
-    showError("Please select number of turns to read.");
-    return false;
-  }
-	
+  
   if (1 == m_Size) {
     //return readPtlSerial(data1, data2);
     m_data1 = data1;
@@ -616,9 +637,12 @@ bool VTKBeamBeam3DReader::readPtl(double* data1, double* data2)
 }
 
 bool VTKBeamBeam3DReader::readPtlSerial() //double* data1, double* data2)
-{  
-  m_Reader->OpenStream();
+{
+  if ((m_TurnRepeatCounter > 1) && (m_TurnRepeatCounter >=  m_TurnRepeat) && (m_TurnRepeat > 1))
+    return false;
+
   uint32_t base = m_Reader->GetDataTimeStep();
+
   m_TurnsRead=0;
   while (true) {    
       double t = m_Reader->GetDataTime();
@@ -626,7 +650,7 @@ bool VTKBeamBeam3DReader::readPtlSerial() //double* data1, double* data2)
       if ((m_Rank == 0) && m_Debug)
 	std::cout << "\n===> Received step: " << it << " time: " << t<< ". Assigned turn range: "<<m_SelectionTurnStart<<", "<<m_SelectionTurnCount<<std::endl;      
 
-      if (it > m_SelectionTurnStart + m_SelectionTurnCount)
+      if (it > m_SelectionTurnStart + m_SelectionTurnCount + base)
 	break;
       
       if (isValidTurn(it, base)) {      
@@ -675,13 +699,15 @@ bool VTKBeamBeam3DReader::readPtlSerial() //double* data1, double* data2)
       } // validTurn
       else {
 	if (m_Debug) std::cout<<" skipping turn: "<<it<<std::endl;
+  break;	
       }
 
       if (m_Reader->AdvanceStream())
 	break;
   }
-  
-  m_Reader->CloseStream();
+
+  //m_SelectionTurnStart +=  m_SelectionTurnStart + m_SelectionTurnCount;
+  m_TurnRepeatCounter ++;
 
   return true;
 }

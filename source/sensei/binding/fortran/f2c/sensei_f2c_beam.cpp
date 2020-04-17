@@ -103,9 +103,9 @@ void FC_GLOBAL(senseihandlereader_createfile_f2c,
   *ierr =  (*sensei == NULL)? -1 : 0;
   if (*sensei != NULL) {
     if ((name != NULL)  &&  (strlen(name) > 0))
-      SenseiHandleReader_initXML(*sensei, name);  
+      *ierr = SenseiHandleReader_initXML(*sensei, name);  
     else
-      SenseiHandleReader_initXML(*sensei, "sensei.xml");
+      *ierr = SenseiHandleReader_initXML(*sensei, "sensei.xml");
   }
 }
 
