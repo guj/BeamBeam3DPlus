@@ -2,7 +2,7 @@
 6 50000                                 # phase space, # particles
 128 128 1024                             # gridpoints in x, y, z
 1                                      # longitudinal slices 
-6                                    # number of turns
+1050                                    # number of turns
 2                                      initial distribution (2 Gaussian)
 1d-5 0.2 0.0 1.0 1.0 0.0 0.0      x: sig, be, al, x-sc, px-sc, cn. x, cn px
 1d-5 0.2 0.0 1.0 1.0 0.0 0.0      y: sig, be, al, y-sc, py-sc, cn. y, cn py
