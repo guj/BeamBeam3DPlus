@@ -7,8 +7,8 @@
   <reader>
     <transport type="hdf5" filename="beambeam3d.h5" method="n"/>
     <bunch value="0"/>
-    <turn start="0"  count="1000" /> <!-- must be multile of 4-->
-    <ptl  start="0" count="16" /> 
+    <turn start="0"  count="1024" /> <!-- must be power of 2-->
+    <ptl  start="0" count="19" /> 
     <cols  value1="x" value2="y" /> <!-- lower case -->
     <!-- <debug/>  -->
   </reader>

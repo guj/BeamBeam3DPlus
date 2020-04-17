@@ -7,7 +7,7 @@
   <reader>
     <transport type="adios2" filename="beambeam3dsst.bp" engine="sst"/>
     <bunch value="0"/>
-    <turn start="0"  count="1000" /> <!-- must be multile of 4-->
+    <turn start="0"  count="1024" /> <!-- must be power of 2-->
     <ptl  start="0" count="16" /> 
     <cols  value1="y" value2="z" /> <!-- lower case -->
     <debug/>  
