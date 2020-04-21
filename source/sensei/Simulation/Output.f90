@@ -2341,7 +2341,7 @@ contains
     !call sensei_phaseout(Bpts, idbunch, itic, iseedinit, close2g);
     !!! sensei is not saving the attributes: itic/iseedinit/close2g yet
     
-    write (*,*) "no phase out yet to sensei "
+    !!!!write (*,*) "no phase out yet to sensei "
     !!call sensei_phaseout(Bpts, idbunch);
 
     !write(*,*)Nplocal,iturn,itic,iseedinit,close2g(1),close2g(2)
