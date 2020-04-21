@@ -7,10 +7,10 @@
   <reader>
     <transport type="adios2" filename="beambeam3d.bp" engine="bp4"/>
     <bunch value="0"/>
-    <turn start="0"  count="1000" /> <!-- must be multile of 4-->
-    <ptl  start="0" count="16" /> 
+    <turn start="0"  count="1024" repeat="0"/> <!-- count must be power of 2 -->
+    <ptl  start="0" count="2" /> 
     <cols  value1="y" value2="z" /> <!-- lower case -->
-    <!-- <debug/>  -->
+ <!--     <debug/>  -->
   </reader>
 </sensei>
 
