@@ -641,6 +641,9 @@ bool VTKBeamBeam3DReader::readPtlSerial() //double* data1, double* data2)
   if ((m_TurnRepeatCounter > 1) && (m_TurnRepeatCounter >=  m_TurnRepeat) && (m_TurnRepeat > 1))
     return false;
 
+  if ((0  == m_TurnRepeat)  &&  (m_TurnRepeatCounter > 0))
+    return false;
+  
   uint32_t base = m_Reader->GetDataTimeStep();
 
   m_TurnsRead=0;
