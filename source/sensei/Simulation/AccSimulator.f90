@@ -1230,7 +1230,7 @@ contains
        call sensei_w_setupPtl(senseiW, nbunch, i8start, i8count, ptRate, ierr);
        i8start = i8start*ptFrac
        i8count = Nplocal
-       write (*,*) "not yet setting up for phaseout ... "
+       !!!!write (*,*) "not yet setting up for phaseout ... "
        !!call sensei_phaseout_setup(senseiW, nbunch, i8start, i8count, ierr)
 
        !call sensei_turn_start(ierr, iend)
