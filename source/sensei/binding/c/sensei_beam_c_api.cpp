@@ -125,7 +125,6 @@ SenseiHandleWriter* SenseiHandleWriter_createFile(MPI_Comm comm, const char* nam
 
 void SenseiHandleWriter_remove(SenseiHandleWriter* Sensei)
 {
-  cout << "C API, delete_Sensei " << Sensei<<endl;
   if (Sensei != NULL) 
     delete reinterpret_cast<VTKBeamBeam3DWriter*>(Sensei);
 }
