@@ -50,6 +50,7 @@ public:
   uint64_t GetPtlsReadPerTurn() {return m_NumPtlPerTurn;}
 
   bool m_Debug = false;
+  bool m_EndOfStream = false;
   uint64_t m_TurnsRead = 0;
   uint64_t m_NumPtlPerTurn = 0;
  private:
