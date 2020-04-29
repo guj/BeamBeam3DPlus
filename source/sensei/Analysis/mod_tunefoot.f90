@@ -53,7 +53,7 @@ MODULE SENSEI_TUNEFOOT
          call sensei_r_get_params(senseiR, numTurns, ptlPerTurn);
 
          if (numTurns <  readInNumTurns)  then
-            write (*,*) "Not enough turns. ", numTurns
+            write (*,*) "Not enough turns. ", numTurns, readInNumTurns
             deallocate(d1)
             deallocate(d2)
             call sensei_r_close(senseiR, ierr);
@@ -183,8 +183,8 @@ MODULE SENSEI_TUNEFOOT
         output(1) = dcmplx(data1(1),0)
         output(M/2+1) = dcmplx(data1(2),0)
         do i = 2, M/2
-           output(i) = cmplx(data1(2*i-1),data1(2*i)) 
-           !output(i) = dcmplx(data1(2*i-1),data1(2*i)) 
+           output(i) = dcmplx(data1(2*i-1),data1(2*i)) 
+           !output(i) = cmplx(data1(2*i-1),data1(2*i)) 
         enddo
         power(1) = abs(output(1))*abs(output(1))/(M*M);
         do i = 2, M/2
@@ -224,9 +224,11 @@ MODULE SENSEI_TUNEFOOT
         output(1) = dcmplx(data1(1),0)
         output(M/2+1) = dcmplx(data1(2),0)
         do i = 2, M/2
-           output(i) = cmplx(data1(2*i-1),data1(2*i)) 
+           !output(i) = cmplx(data1(2*i-1),data1(2*i)) 
+           output(i) = dcmplx(data1(2*i-1),data1(2*i)) 
         enddo
         power(1) = abs(output(1))*abs(output(1))/(M*M);
+
         do i = 2, M/2
            power(i) = abs(output(i))*abs(output(i))/M/M
         enddo
@@ -255,7 +257,6 @@ MODULE SENSEI_TUNEFOOT
       deallocate(power)
       deallocate(data1)
       deallocate(btf)
-      
 
       end subroutine footprint
 
