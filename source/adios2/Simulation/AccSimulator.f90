@@ -1322,7 +1322,9 @@ contains
        !// Loop through "Nturn" simulation.
 !-----------------------------------------------------------------------------------
        do i = iend + 1, Nturn
-          call adios2_turn_start(ierr)
+          if (mod(i,ptRate).eq.0) then
+             call adios2_turn_start(ierr)
+          endif
           !resample the particle distribution every Nresamp turns
           if(mod(i,Nresamp).eq.0) then
              do idbunch = 1, nbunch
@@ -1584,8 +1586,8 @@ contains
              endif
 
              !// Save particle distribution in phase space
-             !if(ptOut>0 .and. mod(i,ptRate).eq.0) then
-             if(ptOut>0) then !! save at all turns
+             if(ptOut>0 .and. mod(i,ptRate).eq.0) then
+             !!if(ptOut>0) then !! save at all turns
                 !!call ptclout_Output(Bpts,myid,i,idbunch,Nplocal,ptOut,nturn,ptRate,ptSampleInd)
                 call ptclout_Output_adios2(Bpts,myid,i,idbunch,ptOut,ptSampleInd)
              endif
@@ -1620,7 +1622,9 @@ contains
              enddo
              saveAll = 0
           endif
-          call adios2_turn_end(ierr)
+          if (mod(i,ptRate).eq.0) then
+             call adios2_turn_end(ierr)
+          endif
        enddo !loop through Nturn
 
        !// Save final particle distribution to resume simulation (if not saved before)

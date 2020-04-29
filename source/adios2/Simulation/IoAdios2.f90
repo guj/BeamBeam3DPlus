@@ -84,7 +84,6 @@ MODULE ADIOS2_UTIL
         ierr = 0
 
         ! Define variables
-        
         vStart(1) = 0; vStart(2) = start;  vStart(3) = 0;
         vCount(1) = 6; vCount(2) = count;  vCount(3) = 1;
         vTotal(1) = 6; vTotal(2) = global; vTotal(3) = nbunchs;
