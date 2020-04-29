@@ -638,6 +638,9 @@ bool VTKBeamBeam3DReader::readPtl(double* data1, double* data2)
 
 bool VTKBeamBeam3DReader::readPtlSerial() //double* data1, double* data2)
 {
+  if (m_EndOfStream)
+    return false;
+
   if ((m_TurnRepeatCounter > 1) && (m_TurnRepeatCounter >=  m_TurnRepeat) && (m_TurnRepeat > 1))
     return false;
 
@@ -646,6 +649,9 @@ bool VTKBeamBeam3DReader::readPtlSerial() //double* data1, double* data2)
   
   uint32_t base = m_Reader->GetDataTimeStep();
 
+  if (m_TurnRepeatCounter > 0)
+    base =  m_SelectionTurnCount * m_TurnRepeatCounter;
+
   m_TurnsRead=0;
   while (true) {    
       double t = m_Reader->GetDataTime();
@@ -653,7 +659,7 @@ bool VTKBeamBeam3DReader::readPtlSerial() //double* data1, double* data2)
       if ((m_Rank == 0) && m_Debug)
 	std::cout << "\n===> Received step: " << it << " time: " << t<< ". Assigned turn range: "<<m_SelectionTurnStart<<", "<<m_SelectionTurnCount<<std::endl;      
 
-      if (it > m_SelectionTurnStart + m_SelectionTurnCount + base)
+      if (it >= m_SelectionTurnStart + m_SelectionTurnCount + base)
 	break;
       
       if (isValidTurn(it, base)) {      
@@ -701,12 +707,15 @@ bool VTKBeamBeam3DReader::readPtlSerial() //double* data1, double* data2)
 	m_Reader->ReleaseData();	
       } // validTurn
       else {
-	if (m_Debug) std::cout<<" skipping turn: "<<it<<std::endl;
-  break;	
+	//if (m_Debug) std::cout<<" skipping turn: "<<it<<std::endl;
+	std::cout<<" skipping turn: "<<it<<std::endl;
+	//break;	
       }
 
-      if (m_Reader->AdvanceStream())
+      if (m_Reader->AdvanceStream()) {
+	m_EndOfStream = true;
 	break;
+      }
   }
 
   //m_SelectionTurnStart +=  m_SelectionTurnStart + m_SelectionTurnCount;
