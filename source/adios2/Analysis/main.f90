@@ -15,7 +15,7 @@ program main
   integer :: ptlStart=0, ptlCount=10
   integer :: tStart=0, tCount=2; !! turnStart/Count
   integer :: bunchID=0;
-  integer :: attrPos1=0, attrPos2=1
+  integer :: attrPos1=0, attrPos2=1, hasMore;
 
   i = 1;
   !do i = 1, 
@@ -77,8 +77,7 @@ program main
   call MPI_INIT(ierr)
 
   call tunefoot_init(MPI_COMM_WORLD, ierr)
-
-
+  if (ierr .eq. 0) then  
 !---------------------------------------------------------------------
 ! NOTE: all of the following parameters are::: 0 based for C libraries
 ! 
@@ -86,12 +85,18 @@ program main
 !      function_name (start, count)
 !---------------------------------------------------------------------
 
-  call tunefoot_set_particleRange(ptlStart, ptlCount)
-  call tunefoot_set_bunch(bunchID)
-  call tunefoot_setTurnRange(tStart, tCount)
+     call tunefoot_set_particleRange(ptlStart, ptlCount)
+     call tunefoot_set_bunch(bunchID)
+     call tunefoot_setTurnRange(tStart, tCount)
 
-  call tunefoot_run(attrPos1, attrPos2) 
-
+     call tunefoot_writer_init(MPI_COMM_WORLD, ierr);
+     
+     hasMore = 1
+     do while (hasMore .gt. 0)
+        call tunefoot_run(attrPos1, attrPos2, hasMore) 
+     enddo
+  endif
+     call tunefoot_close()
 contains
 
   subroutine hasEnoughInput(i, c, arg)
