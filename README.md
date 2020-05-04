@@ -82,3 +82,23 @@ PREREQUEST: install sensei:
       - samples: see sensei-h5.xml or sensei-a2.xml
 
       - users can customize the filename and reader options (bunch, particles range, etc)
+      
+      mpirun -n 4 ../../build-sensei/bin/sensei.xmain
+
+
+
+===== gsplot.py ========
+To use the python script to visualize:
+python3 gsplot.py -i tunefoot.bp
+
+tunefoot.bp is hardcoded in the analysis code to store every tunefoot created in the file
+
+Workflow can be 
+
+Simulation --- SST/BPFile --- Analysis ---- SST/BPFile --- Python 
+
+where SST or BPFile mode are specified in the adios2_config.xml 
+* Simulation -- Analysis uses "SimulationOutput" I/O 
+* Analysis -- Python uses "TuneFoot" I/O
+
+    
