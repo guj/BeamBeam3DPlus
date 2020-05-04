@@ -13,7 +13,13 @@ MODULE ADIOS2_TUNEFOOT
   type(adios2_adios)      :: a2_handle
   type(adios2_io)         :: a2_io
   type(adios2_engine)     :: a2_Reader
-  type(adios2_variable)   :: var_handle   !sampled (ptFrac)
+  type(adios2_variable)   :: var_handle   
+
+  type(adios2_io)         :: a2_io_tunefoot
+  type(adios2_variable)   :: tune1_handle 
+  type(adios2_variable)   :: tune2_handle 
+  type(adios2_engine)     :: a2_Writer
+  integer :: a2_store_tunefoot = 0
 
   integer :: rank, size;
 
@@ -25,21 +31,28 @@ MODULE ADIOS2_TUNEFOOT
       integer, intent(out)            :: ierr
       integer, intent(in)             :: comm
 
+      call MPI_Comm_rank(comm, rank, ierr);
+      call MPI_Comm_size(comm, size, ierr);
       ! Init adios2
-      call adios2_init_config (a2_handle, "adios2_config.xml", comm, &
+      ! older adios version: call adios2_init_config (a2_handle, "adios2_config.xml", comm, &
+      call adios2_init (a2_handle, "adios2_config.xml", comm, &
            adios2_debug_mode_on, ierr)
 
-      call adios2_declare_io (a2_io, a2_handle, "Tunefoot", ierr)
+      call adios2_declare_io (a2_io, a2_handle, "SimulationOutput", ierr)
 
       fname = "beam3d.bp";
       call adios2_open (a2_Reader, a2_io, fname, adios2_mode_read, &
            comm, ierr)      
-      write (*,*) ierr, a2_Reader
-
-
-      call MPI_Comm_rank(comm, rank, ierr);
-      call MPI_Comm_size(comm, size, ierr);
     end SUBROUTINE tunefoot_init
+
+    !----------------------------------------------------------------------------!
+    SUBROUTINE  tunefoot_close()
+    !----------------------------------------------------------------------------!
+      integer :: ierr
+      call adios2_close(a2_Reader, ierr)
+      call adios2_close(a2_Writer, ierr);
+      call adios2_finalize(a2_handle, ierr)
+    end SUBROUTINE tunefoot_close
 
     !----------------------------------------------------------------------------!
     SUBROUTINE tunefoot_set_particleRange(pStart, pSize)
@@ -84,9 +97,59 @@ MODULE ADIOS2_TUNEFOOT
       endif
     end SUBROUTINE tunefoot_display
 
+    !----------------------------------------------------------------------------!
+    SUBROUTINE  tunefoot_writer_init(comm, ierr)
+    !----------------------------------------------------------------------------!
+      character*(20)                  :: fname
+      integer, intent(out)            :: ierr
+      integer, intent(in)             :: comm
+      integer*8, dimension(1)         :: vStart, vCount; !! one core, no need vTotal
+
+      ! now write out tunefoot
+      a2_store_tunefoot = 0;
+      call adios2_declare_io (a2_io_tunefoot, a2_handle, "TuneFoot", ierr)
+
+      if (ierr .ne. 0) return;
+
+      fname = "tunefoot.bp"
+      call adios2_open (a2_Writer, a2_io_tunefoot, fname, adios2_mode_write, &
+           comm, ierr)      
+
+      if (ierr .ne. 0) return;
+      ! Define variables                                                                                                                         
+      vStart(1) = 0;
+      vCount(1) = ParticleSize; 
+      pNbunch = nbunchs
+      call adios2_define_variable(tune1_handle, a2_io_tunefoot, "tune1", adios2_type_dp, 1, &
+           vCount, vStart, vCount, .false., ierr)
+
+      if (ierr .ne. 0) return;
+      call adios2_define_variable(tune2_handle, a2_io_tunefoot, "tune2", adios2_type_dp, 1, &
+           vCount, vStart, vCount, .false., ierr)
+      
+      if (ierr .ne. 0) return;
+      a2_store_tunefoot = 1;
+    end SUBROUTINE TUNEFOOT_WRITER_INIT
+
+
 
     !----------------------------------------------------------------------------!
-    SUBROUTINE tunefoot_run(pos1, pos2)      
+    SUBROUTINE  tunefoot_writer_put(tune1, tune2)
+    !----------------------------------------------------------------------------!
+      integer :: ierr;
+      real*8, dimension(ParticleSize), intent(in) :: tune1,tune2
+
+      if (a2_store_tunefoot .eq. 0) return
+      
+      call adios2_begin_step(a2_Writer, ierr);
+      call adios2_put (a2_Writer, tune1_handle, tune1, adios2_mode_sync, ierr)
+      call adios2_put (a2_Writer, tune2_handle, tune2, adios2_mode_sync, ierr)
+      call adios2_end_step(a2_Writer, ierr);
+    end SUBROUTINE TUNEFOOT_WRITER_PUT
+
+
+    !----------------------------------------------------------------------------!
+    SUBROUTINE tunefoot_run(pos1, pos2, hasMore)      
     !----------------------------------------------------------------------------!
       integer :: step_status
       integer :: ierr;
@@ -94,13 +157,16 @@ MODULE ADIOS2_TUNEFOOT
       integer*8, allocatable, dimension(:) :: shape_in
       integer*8 :: current_step
       integer, intent(in):: pos1, pos2
-
+      integer, intent(out):: hasMore
       integer :: turnCounter = 1;
-
+      
       double precision, allocatable, dimension(:,:) :: array1
       double precision, allocatable, dimension(:,:) :: array2;
 
       real*8, allocatable, dimension(:) :: tune1,tune2
+
+      turnCounter = 1;
+      hasMore = 0;
 
       call tunefoot_display(pos1, pos2)
 
@@ -117,16 +183,15 @@ MODULE ADIOS2_TUNEFOOT
       do
          if (turnCounter > TurnSize) exit;
 
-         !call adios2_begin_step_full(a2_Reader, adios2_step_mode_next_available, 0., &
-         !     step_status, ierr)
-         !!call adios2_begin_step(a2_Reader, ierr);
-         ierr = 0;
-         call adios2_begin_step(a2_Reader, adios2_step_mode_read, 0., step_status, ierr);
-         if(step_status == adios2_step_status_end_of_stream) exit
+         ierr = 1;
+         !!call adios2_begin_step(a2_Reader, adios2_step_mode_read, 0., step_status, ierr);
+           call adios2_begin_step(a2_Reader, adios2_step_mode_read, -1.0, step_status, ierr);
          if (ierr .ne. 0) exit;
+         if(step_status == adios2_step_status_end_of_stream) exit
+         if(step_status == adios2_step_status_not_ready) exit         
 
          call adios2_current_step(current_step, a2_Reader, ierr)
-
+         !write(*,*) "  curr=", current_step, TurnStart
          if (current_step >= TurnStart) then
             !write(*,*) "curr step = ", current_step, "turncounter=", turnCounter, TurnStart, TurnSize, pos1, pos2
             call adios2_inquire_variable(var_handle,  a2_io, "particles", ierr)
@@ -157,6 +222,8 @@ MODULE ADIOS2_TUNEFOOT
          do i = 1, ParticleSize
           write(4,*)tune1(i),tune2(i)
         enddo
+        call tunefoot_writer_put(tune1, tune2)
+        hasMore = 1; !! can try to run more
      else if (turnCounter == 1) then
         write (*,*) "turn starts is too large. No actions taken"
         write (4,*) ""
@@ -170,7 +237,6 @@ MODULE ADIOS2_TUNEFOOT
 
       deallocate(array1)
       deallocate(array2)
-
       
     end SUBROUTINE tunefoot_run
     
