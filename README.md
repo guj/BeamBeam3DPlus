@@ -88,7 +88,9 @@ PREREQUEST: install sensei:
 
 
 ===== gsplot.py ========
+
 To use the python script to visualize:
+
 python3 gsplot.py -i tunefoot.bp
 
 tunefoot.bp is hardcoded in the analysis code to store every tunefoot created in the file
