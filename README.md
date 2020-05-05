@@ -3,7 +3,7 @@ Extending BeamBeam3D code with I/O options
 
 PREREQUEST:  module load cmake
 
-==== For ADIOS2 ===
+================== For using with ADIOS2 =============
 
 PREREQUEST:  install adios2:
 
@@ -54,11 +54,10 @@ where SST or BPFile mode are specified in the adios2_config.xml
 
 
 
-
-
-
-
+            
+            
   
+
 ================== FOR using with SENSEI ===============
 
 PREREQUEST: install sensei: 
