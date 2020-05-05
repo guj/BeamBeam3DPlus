@@ -35,8 +35,31 @@ It contains a sample input files:  beam1.in beam2.in + adios2-config.xml
 
       ../../build-adios2/bin/adios2.mod_tunefoot
   
+
+=> To plot with tunePlot.py 
+
+To use the python script to visualize:
+
+python3 tunePlot.py -i tunefoot.bp
+
+tunefoot.bp is hardcoded in the analysis code to store every tunefoot created in the file
+
+Workflow can be 
+
+Simulation --- SST/BPFile --- Analysis ---- SST/BPFile --- Python 
+
+where SST or BPFile mode are specified in the adios2_config.xml 
+* Simulation -- Analysis uses "SimulationOutput" I/O 
+* Analysis -- Python uses "TuneFoot" I/O
+
+
+
+
+
+
+
   
-===== FOR SENSEI ===
+================== FOR using with SENSEI ===============
 
 PREREQUEST: install sensei: 
 
@@ -87,20 +110,5 @@ PREREQUEST: install sensei:
 
 
 
-===== gsplot.py ========
-
-To use the python script to visualize:
-
-python3 gsplot.py -i tunefoot.bp
-
-tunefoot.bp is hardcoded in the analysis code to store every tunefoot created in the file
-
-Workflow can be 
-
-Simulation --- SST/BPFile --- Analysis ---- SST/BPFile --- Python 
-
-where SST or BPFile mode are specified in the adios2_config.xml 
-* Simulation -- Analysis uses "SimulationOutput" I/O 
-* Analysis -- Python uses "TuneFoot" I/O
-
+  
     
