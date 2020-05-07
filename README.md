@@ -62,7 +62,7 @@ where SST or BPFile mode are specified in the adios2_config.xml
             
   
 
-================== FOR using with SENSEI ===============
+:pensive:  ================== FOR using with SENSEI ===============. :pensive:
 
 PREREQUEST: install sensei: 
 
