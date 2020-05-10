@@ -89,14 +89,17 @@ program main
      call tunefoot_set_bunch(bunchID)
      call tunefoot_setTurnRange(tStart, tCount)
 
-     call tunefoot_writer_init(MPI_COMM_WORLD, ierr);
+     !call tunefoot_writer_init(MPI_COMM_WORLD, ierr);
+     call tunefoot_writer_init(MPI_COMM_NULL, attrPos1, attrPos2, ierr);
      
      hasMore = 1
      do while (hasMore .gt. 0)
         call tunefoot_run(attrPos1, attrPos2, hasMore) 
      enddo
   endif
-     call tunefoot_close()
+  
+  call tunefoot_close()
+  call MPI_Finalize(ierr)
 contains
 
   subroutine hasEnoughInput(i, c, arg)
