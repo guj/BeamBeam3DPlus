@@ -5,9 +5,14 @@ MODULE ADIOS2_UTIL
     public
 
     type(adios2_adios)      :: a2_handle
+
+    type(adios2_io)         :: a2_io_file
+    type(adios2_engine)     :: a2_engine_file
+
     type(adios2_io)         :: a2_io
-    type(adios2_io)         :: a2_phase_io
     type(adios2_engine)     :: a2_engine
+
+    type(adios2_io)         :: a2_phase_io
     type(adios2_engine)     :: a2_phaseout_engine
 
     type(adios2_variable)   :: var_handle   !sampled (ptFrac)
@@ -33,6 +38,7 @@ MODULE ADIOS2_UTIL
         character*(20)                  :: fname
         character*(20)                  :: currVarName
         integer                         :: i
+        character(len=:), allocatable :: engineType
 
         ierr = 0
 
@@ -43,6 +49,19 @@ MODULE ADIOS2_UTIL
         
         ! Init IO object
         call adios2_declare_io (a2_io, a2_handle, "SimulationOutput", ierr)
+
+        ! if using SST, then provide a file backup
+        call adios2_io_engine_type(engineType, a2_io, ierr)
+
+        if ((engineType == 'BPFile') .or. (engineType == 'HDF5')) then
+           ! no need to look for file backup
+        else
+           !call adios2_declare_io(a2_io_file, a2_handle, "SimulationOutputFile", ierr) 
+           !if (a2_io_file %valid .eqv. .true.) then 
+           !   call adios2_open (a2_engine_file, a2_io_file, "beam3d.bp", adios2_mode_write, comm, ierr)
+           !endif
+        endif
+
         call adios2_declare_io (a2_phase_io, a2_handle, "PhaseOutput", ierr)
 
         fname = "beam3d.bp"
@@ -61,6 +80,9 @@ MODULE ADIOS2_UTIL
       implicit none
       integer, intent(out)            :: ierr
       call adios2_begin_step (a2_engine, ierr)
+      if (a2_io_file %valid .eqv. .true.) then 
+         call adios2_begin_step (a2_engine_file, ierr)
+      endif
     end SUBROUTINE adios2_turn_start
 
 
@@ -70,6 +92,9 @@ MODULE ADIOS2_UTIL
       implicit none
       integer, intent(out)            :: ierr
       call adios2_end_step (a2_engine, ierr)
+      if (a2_io_file %valid .eqv. .true.) then 
+         call adios2_end_step(a2_engine_file, ierr)
+      endif
     end SUBROUTINE adios2_turn_end
 
 
@@ -135,7 +160,9 @@ MODULE ADIOS2_UTIL
         !     iturn, var_handle%name,  '/', ierr)
 
         call adios2_put (a2_engine, var_handle, data, adios2_mode_sync, ierr)
-        !call adios2_put (adios2_engine, var_particles(currBunch), data, adios2_mode_deferred, ierr)
+        if (a2_io_file %valid .eqv. .true.) then 
+           call adios2_put(a2_engine_file, var_handle, data, adios2_mode_sync, ierr)
+        endif
 
     END SUBROUTINE adios2_writePtlData
 
@@ -194,6 +221,12 @@ MODULE ADIOS2_UTIL
         ierr = 0
         call adios2_close    (a2_phaseout_engine, ierr)
         call adios2_close    (a2_engine, ierr)
+
+        if (a2_io_file %valid .eqv. .true.) then
+           call adios2_close    (a2_engine_file, ierr)
+        endif
+        !call adios2_close    (a2_engine, ierr)
+
         call adios2_finalize (a2_handle, ierr)
 
     END SUBROUTINE adios2_io_finalize
