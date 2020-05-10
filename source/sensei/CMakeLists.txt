@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.6)
 
+project(BeamBeam3DPlusSENSEI)
+
+enable_language(Fortran)
 find_package(HDF5 REQUIRED)
 find_package(ADIOS2 REQUIRED)
 find_package(SENSEI REQUIRED)
