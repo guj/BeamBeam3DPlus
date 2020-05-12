@@ -56,11 +56,11 @@ PREREQUEST:
 
 	- Point pythonpath to ADIOS python library, e.g.      
 
-      export PYTHONPATH=/Users/junmin/software/adios2/master/install/lib/python3.7/site-packages/
+      	  export PYTHONPATH=/Users/junmin/software/adios2/master/install/lib/python3.7/site-packages/
 
-      - Command to use the python script to visualize:
+	- Command to use the python script to visualize:
 
-      python3 tunePlot.py -i tunefoot.bp
+      	  python3 tunePlot.py -i tunefoot.bp
 
       "Note: tunefoot.bp is the filename hardcoded in the analysis code to store every tunefoot created in the file"
 
