@@ -37,14 +37,15 @@ It contains a sample input files:  beam1.in beam2.in + adios2-config.xml
   
 without argument, if looks for file tunefoot.in. which looks like this:
 
-more tunefoot.in
-0                       #bunch <0 or 1>
+	more tunefoot.in
 
-0 1000                  #particleStart & count
+	0                       #bunch <0 or 1>
 
-0 4096                  #turnStart & count
+	0 1000                  #particleStart & count
 
-1 0 1 0 1 0             #x #px #y #py #z #pz
+	0 4096                  #turnStart & count
+
+	1 0 1 0 1 0             #x #px #y #py #z #pz
 
 
 => To plot with tunePlot.py 
@@ -57,7 +58,7 @@ PREREQUEST:
 
       export PYTHONPATH=/Users/junmin/software/adios2/master/install/lib/python3.7/site-packages/
 
-        - Command to use the python script to visualize:
+      - Command to use the python script to visualize:
 
       python3 tunePlot.py -i tunefoot.bp
 
