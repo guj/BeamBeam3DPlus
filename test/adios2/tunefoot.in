@@ -1,0 +1,5 @@
+0			#bunch <0 or 1>
+0 1000			#particleStart & count
+0 4096 			#turnStart & count
+1 0 1 0 1 0		#x #px #y #py #z #pz
+

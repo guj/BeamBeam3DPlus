@@ -18,6 +18,7 @@ MODULE ADIOS2_TUNEFOOT
   type(adios2_variable)   :: var_handle   
 
   type(adios2_io)         :: a2_io_tunefoot
+  type(adios2_variable), allocatable, dimension(:)   :: tune_handles
   type(adios2_variable)   :: tune1_handle 
   type(adios2_variable)   :: tune2_handle 
   type(adios2_engine)     :: a2_Writer
@@ -52,7 +53,7 @@ MODULE ADIOS2_TUNEFOOT
            comm, ierr)     
 
       end  = MPI_WTime()
-      !write (*, *) "  ... tunefoot_init consumed:", end-start,  start, end
+
     end SUBROUTINE tunefoot_init
 
 
@@ -116,6 +117,23 @@ MODULE ADIOS2_TUNEFOOT
       endif
     end SUBROUTINE tunefoot_display
 
+
+    !----------------------------------------------------------------------------!
+    SUBROUTINE tunefoot_display_all(attrPos, size)
+    !----------------------------------------------------------------------------!
+      implicit none
+      integer, intent(in) :: size
+      integer, dimension(size), intent(in):: attrPos
+
+      if (rank == 0) then
+         write (*,*) "-----------------------------------"
+         write (*,*) "Turns: ",TurnStart, TurnSize
+         write (*,*) "Ptls:  ",ParticleStart, ParticleSize
+         write (*,*) "Bunch: ",BunchStart
+         write (*,*) "Attr:  ", attrPos
+      endif
+    end SUBROUTINE tunefoot_display_all
+
     !----------------------------------------------------------------------------!
     SUBROUTINE GetAttrName(pos,  name)
       integer,  intent(in)  :: pos
@@ -139,7 +157,58 @@ MODULE ADIOS2_TUNEFOOT
     !----------------------------------------------------------------------------!
 
     !----------------------------------------------------------------------------!
-    SUBROUTINE  tunefoot_writer_init(comm, pos1,  pos2, ierr)
+    SUBROUTINE  tunefoot_writer_init(comm, tuneAttrPos,  size, ierr)
+    !----------------------------------------------------------------------------!
+      implicit none
+      character*(20)                  :: fname
+      character*(2)                   :: attrName
+      integer, intent(out)            :: ierr
+      integer, intent(in)             :: comm, size
+      integer, dimension(size),intent(in) :: tuneAttrPos
+      integer*8, dimension(1)         :: vStart, vCount; !! one core, no need vTotal
+      integer                         :: i
+      Type(adios2_attribute)          :: attribute;
+
+
+      if (rank > 0) return
+      ! now write out tunefoot
+      a2_store_tunefoot = 0;
+      call adios2_declare_io (a2_io_tunefoot, a2_handle, "TuneFoot", ierr)
+
+      if (ierr .ne. 0) return;
+
+      fname = "tunefoot.bp"
+      call adios2_open (a2_Writer, a2_io_tunefoot, fname, adios2_mode_write, &
+           comm, ierr)      
+
+      if (ierr .ne. 0) return;
+      ! Define variables                                                                                                                         
+      vStart(1) = 0;
+      vCount(1) = ParticleSize; 
+      !pNbunch = nbunchs
+
+      allocate(tune_handles(size))
+
+      do i=1,size
+         call GetAttrName(tuneAttrPos(i), attrName)
+         call adios2_define_variable(tune_handles(i), a2_io_tunefoot, trim(attrName), adios2_type_dp, 1, &
+              vCount, vStart, vCount, .false., ierr)
+         
+         if (ierr .ne. 0) return;
+      enddo
+
+      call  adios2_define_attribute(attribute, a2_io_tunefoot,  "ParticleStart",  ParticleStart,    ierr);
+      call  adios2_define_attribute(attribute, a2_io_tunefoot,  "TurnStart",  TurnStart,    ierr);
+      call  adios2_define_attribute(attribute, a2_io_tunefoot,  "TurnSize",  TurnSize,    ierr);
+      call  adios2_define_attribute(attribute, a2_io_tunefoot,  "Bunch",  BunchStart,    ierr);
+
+
+      a2_store_tunefoot = 1;
+    end SUBROUTINE TUNEFOOT_WRITER_INIT
+
+
+    !----------------------------------------------------------------------------!
+    SUBROUTINE  tunefoot_writer_init1(comm, pos1,  pos2, ierr)
     !----------------------------------------------------------------------------!
       implicit none
       character*(20)                  :: fname
@@ -185,12 +254,34 @@ MODULE ADIOS2_TUNEFOOT
 
 
       a2_store_tunefoot = 1;
-    end SUBROUTINE TUNEFOOT_WRITER_INIT
-
+    end SUBROUTINE TUNEFOOT_WRITER_INIT1
 
 
     !----------------------------------------------------------------------------!
-    SUBROUTINE  tunefoot_writer_put(tune1, tune2)
+    SUBROUTINE  tunefoot_writer_put(tune, numTunes)
+    !----------------------------------------------------------------------------!
+      INCLUDE 'mpif.h'
+      integer :: ierr,i;
+      integer, intent(in) :: numTunes
+      real*8, dimension(numTunes,ParticleSize), intent(in) :: tune 
+      double precision :: start, end
+
+      start = MPI_WTIME()
+      if (a2_store_tunefoot .eq. 0) return
+      
+      call adios2_begin_step(a2_Writer, ierr);
+      do i=1,numTunes
+         call adios2_put (a2_Writer, tune_handles(i), tune(i,:), adios2_mode_sync, ierr)
+      enddo
+      call adios2_end_step(a2_Writer, ierr);
+
+      end = MPI_WTIME()
+      if (rank == 0)  write (*, *) " ... tunefoot_writer_put consumed:", end-start
+
+    end SUBROUTINE TUNEFOOT_WRITER_PUT
+
+    !----------------------------------------------------------------------------!
+    SUBROUTINE  tunefoot_writer_put1(tune1, tune2)
     !----------------------------------------------------------------------------!
       INCLUDE 'mpif.h'
       integer :: ierr;
@@ -206,13 +297,13 @@ MODULE ADIOS2_TUNEFOOT
       call adios2_end_step(a2_Writer, ierr);
 
       end = MPI_WTIME()
-      if (rank == 0)  write (*, *) "tunefoot_writer_put consumed:", end-start
+      if (rank == 0)  write (*, *) " ... tunefoot_writer_put consumed:", end-start
 
-    end SUBROUTINE TUNEFOOT_WRITER_PUT
+    end SUBROUTINE TUNEFOOT_WRITER_PUT1
 
 
     !----------------------------------------------------------------------------!
-    SUBROUTINE tunefoot_run(pos1, pos2, hasMore)      
+    SUBROUTINE tunefoot_run1(pos1, pos2, hasMore)      
     !----------------------------------------------------------------------------!
       implicit none
       INCLUDE 'mpif.h'
@@ -233,7 +324,7 @@ MODULE ADIOS2_TUNEFOOT
       double  precision :: start, end
 
       start = MPI_WTIME()
-      if (rank == 0) write(*,*) "==== start  = ", start
+
       turnCounter = 1;
       hasMore = 0;
 
@@ -255,9 +346,10 @@ MODULE ADIOS2_TUNEFOOT
          if (turnCounter > TurnSize) exit;
 
          ierr = 1;
-         !!call adios2_begin_step(a2_Reader, adios2_step_mode_read, 0., step_status, ierr);
-           call adios2_begin_step(a2_Reader, adios2_step_mode_read, -1.0, step_status, ierr);
+         !! note that need to use -1 to make sure wait for response.
+         call adios2_begin_step(a2_Reader, adios2_step_mode_read, -1.0, step_status, ierr);
          if (ierr .ne. 0) exit;
+
          if(step_status == adios2_step_status_end_of_stream) exit
          if(step_status == adios2_step_status_not_ready) exit         
 
@@ -273,12 +365,10 @@ MODULE ADIOS2_TUNEFOOT
                call adios2_set_selection(var_handle, 3, selStart, selCount, ierr)                     
                
                call adios2_get(a2_Reader, var_handle, localArray1(turnCounter, 1:perRankPtl), adios2_mode_sync, ierr)
-               !write(*,*) array1(turnCounter, 1:5)
                
                selStart(1) = pos2;
                call adios2_set_selection(var_handle, 3, selStart, selCount, ierr)
                call adios2_get(a2_Reader, var_handle, localArray2(turnCounter, 1:perRankPtl), adios2_mode_sync, ierr)
-               !write(*,*) array2(turnCounter, 1:5)
             endif
 
             turnCounter = turnCounter + 1;
@@ -287,10 +377,7 @@ MODULE ADIOS2_TUNEFOOT
       enddo
 
       end  = MPI_WTIME()
-      if (rank == 0)  write (*, *) " ... tunefoot_get_data consumed:", end-start, end
-
-      !write(*,'(8f15.8)') localArray1(:,1)
-      !write(*,'(8f15.8)') localArray1(:,2)
+      if (rank == 0)  write (*, *) " ... tunefoot_get_data consumed:", end-start
 
 
       tmp  = TurnSize * perRankPtl
@@ -311,21 +398,20 @@ MODULE ADIOS2_TUNEFOOT
 
       !write (*,*) turnCounter, TurnSize, ParticleSize
 
-!!      if (turnCounter  ==  -1) then 
-!! disable tunefoot TEMPORARY
-
          if (turnCounter == TurnSize+1) then
             start = end;
             if (rank .eq. 0) then
-               call footprint(array1, array2,tune1,tune2, TurnSize, ParticleSize);      
+               !!call footprint(array1, array2,tune1,tune2, TurnSize, ParticleSize);      
+               call footprintOne(array1, tune1,TurnSize, ParticleSize);      
+               call footprintOne(array2, tune2,TurnSize, ParticleSize);      
                end =  MPI_WTIME()
-               write (*, *) " ...  tunefoot compute consumed:", end-start
+               write (*, *) " ... tunefoot compute consumed:", end-start
          
                do i = 1, ParticleSize
                   write(4,*)tune1(i),tune2(i)
                enddo
                !!  temp disable
-               call tunefoot_writer_put(tune1, tune2)
+               call tunefoot_writer_put1(tune1, tune2)
             endif ! rank == 0
 
             hasMore = 1; !! can try to run more
@@ -348,8 +434,217 @@ MODULE ADIOS2_TUNEFOOT
          deallocate(array2)
       endif
       
+    end SUBROUTINE tunefoot_run1
+    
+
+    !----------------------------------------------------------------------------!
+    SUBROUTINE tunefoot_run(attrPos, numTunes, hasMore)      
+    !----------------------------------------------------------------------------!
+      implicit none
+      INCLUDE 'mpif.h'
+      integer :: step_status
+      integer :: ierr, tmp,  i, perRankPtl;
+      integer*8, dimension(3) :: selStart, selCount
+      integer*8, allocatable, dimension(:) :: shape_in
+      integer*8 :: current_step
+      integer, dimension(numTunes), intent(in):: attrPos
+      integer, intent(in) :: numTunes
+      integer, intent(out):: hasMore
+      integer :: turnCounter = 1;
+      
+      double precision, allocatable, dimension(:,:,:) :: array, localArray
+      double precision, allocatable, dimension(:,:) :: tmpArray
+
+
+      real*8, allocatable, dimension(:,:) :: tune 
+
+      double  precision :: start, end
+
+      start = MPI_WTIME()
+
+      turnCounter = 1;
+      hasMore = 0;
+
+      call tunefoot_display_all(attrPos, numTunes)
+
+      selCount(1)= 1;      
+      !selStart(2) = ParticleStart;   selCount(2) = ParticleSize;
+      perRankPtl = ParticleSize/size;
+      selStart(2) = ParticleStart+perRankPtl*rank; selCount(2) = perRankPtl
+      selStart(3) = BunchStart;      selCount(3) = BunchSize;
+
+      allocate(localArray(numTunes, TurnSize, perRankPtl)); 
+      allocate(tune(numTunes, ParticleSize)); 
+     
+      do
+         if (turnCounter > TurnSize) exit;
+
+         ierr = 1;
+         !! note that need to use -1 to make sure wait for response.
+         call adios2_begin_step(a2_Reader, adios2_step_mode_read, -1.0, step_status, ierr);
+         if (ierr .ne. 0) exit;
+
+         if(step_status == adios2_step_status_end_of_stream) exit
+         if(step_status == adios2_step_status_not_ready) exit         
+
+         call adios2_current_step(current_step, a2_Reader, ierr)
+         !write(*,*) "  curr=", current_step, TurnStart
+         if (current_step >= TurnStart) then
+            !write(*,*) "curr step = ", current_step, "turncounter=", turnCounter, TurnStart, TurnSize, pos1, pos2
+            call adios2_inquire_variable(var_handle,  a2_io, "particles", ierr)
+
+            if( var_handle%valid .eqv. .true. ) then                     
+               !call adios2_variable_shape(shape_in, var_handle%ndims, var_handle, ierr)               
+               do i=1,numTunes
+                  selStart(1) = attrPos(i) !selStart(1) = pos1;
+                  call adios2_set_selection(var_handle, 3, selStart, selCount, ierr)                     
+                  call adios2_get(a2_Reader, var_handle, localArray(i,turnCounter, 1:perRankPtl), adios2_mode_sync, ierr)
+               enddo
+            endif
+
+            turnCounter = turnCounter + 1;
+         endif
+         call adios2_end_step(a2_Reader, ierr)
+      enddo
+
+      end  = MPI_WTIME()
+      if (rank == 0)  write (*, *) " ... tunefoot_get_data consumed:", end-start
+
+
+      tmp  = TurnSize * perRankPtl
+      if (rank == 0) then
+         allocate(array(numTunes, TurnSize, ParticleSize));       
+         allocate(tmpArray(TurnSize, ParticleSize));       
+      endif         
+
+      do i=1,numTunes
+         call MPI_Gather(localArray(i,:,:), tmp, MPI_DOUBLE_PRECISION, &  
+              tmpArray, tmp, MPI_DOUBLE_PRECISION, &
+              0, MPI_COMM_WORLD, ierr)
+
+         call MPI_Barrier(MPI_COMM_WORLD, ierr);
+         if (turnCounter == TurnSize+1) then
+            if (rank .eq. 0) then
+               call footprintOne(tmpArray, tune(i,:), TurnSize, ParticleSize)
+            endif
+         endif         
+      enddo
+
+      call MPI_Barrier(MPI_COMM_WORLD, ierr);
+
+
+      if (turnCounter == TurnSize+1) then
+            if (rank .eq. 0) then
+               deallocate(tmpArray)         
+               call tunefoot_writer_put(tune, numTunes)
+            endif ! rank == 0
+
+            hasMore = 1; !! can try to run more
+         else if (turnCounter == 1) then
+            if (rank == 0) write (*,*) "turn starts is too large. No actions taken"
+            if (rank == 0) write (4,*) ""
+         else
+            if (rank == 0) write (*,*) "turn count is over the limit. no actions taken"
+            write (4,*) ""
+         endif
+
+      deallocate(tune);
+
+      deallocate(localArray)
+
+      if (rank == 0) then
+         deallocate(array)
+      endif
+      
     end SUBROUTINE tunefoot_run
     
+
+    !----------------------------------------------------------------------------!
+    ! in : one array of particle attributes, one of x/px/y/py/z/pz
+    ! out: tune for that input
+    subroutine footprintOne(input, tune, M,npt) 
+    !----------------------------------------------------------------------------!
+      implicit none
+      integer :: M,npt
+      real*8, dimension(M,npt) :: input 
+      real*8, dimension(npt) :: tune
+      real*8 data1(M)
+      real power(M/2)
+      double complex output(M)
+      integer :: i, zero, sign,nn,isign
+      real :: unit,pi,deltat,a,b,x1,x2,x3,x4,x5,x6,x7
+      real :: y1,y2,y3,y4,y5,y6,y7,scale,zz 
+      real*8, allocatable, dimension(:,:) :: btf
+      integer :: Nloop,ilp
+      real*8 :: pamp1,xfrqmin,xfrqmax,xfrq,frqkick
+      real*8 :: xfrqmin1,xfrqmin2,xfrqmax1,xfrqmax2
+      
+      unit = 1.0
+      zero = 0
+      sign = 1
+      scale = 1.0
+      nn = 1
+      isign = 1
+      pi = 2.0*asin(1.0d0)
+
+      deltat = 1.0
+
+      Nloop = npt
+      !tune range of the working points
+      xfrqmin1 = 0.02
+      xfrqmax1 = 0.5
+      xfrqmin2 = 0.02
+      xfrqmax2 = 0.5
+
+      allocate(btf(2,Nloop))
+
+      xfrqmin = xfrqmin1
+      xfrqmax = xfrqmax1
+      do ilp = 1, Nloop
+
+        do i = 1, M
+          data1(i) = input(i,ilp) 
+        enddo
+
+
+        call realft(data1,M,isign)
+        !write(*,*) "out=>", data1(1:10)
+        output = 0.0
+        output(1) = dcmplx(data1(1),0)
+        output(M/2+1) = dcmplx(data1(2),0)
+        do i = 2, M/2
+           output(i) = cmplx(data1(2*i-1),data1(2*i)) 
+           !output(i) = dcmplx(data1(2*i-1),data1(2*i)) 
+        enddo
+        power(1) = abs(output(1))*abs(output(1))/(M*M);
+        do i = 2, M/2
+           power(i) = abs(output(i))*abs(output(i))/M/M
+        enddo
+
+        if(ilp.eq.2) then
+          do i = 1, M/2
+            write(2,*) (i-1)/(M*deltat),"  ",power(i)
+          enddo
+        endif
+
+        pamp1 = 0.0
+        do i = 2, M/2-1
+          xfrq = (i-1)*1.0d0/(M*deltat)
+          if(xfrq.ge.xfrqmin .and. xfrq.le.xfrqmax) then
+             if(pamp1.le.power(i)) then
+               pamp1 = power(i)
+               btf(1,ilp) = xfrq
+               btf(2,ilp) = pamp1
+             endif
+          endif
+        enddo
+        tune(ilp) = btf(1,ilp)
+      enddo
+
+
+      deallocate(btf)
+
+      end subroutine footprintOne
 
     !----------------------------------------------------------------------------!
     !find the working points (tunes) for npt points with M turns.
