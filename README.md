@@ -38,16 +38,19 @@ It contains a sample input files:  beam1.in beam2.in + adios2-config.xml
 
 => To plot with tunePlot.py 
 
-      first point pythonpath to ADIOS python library, e.g.
-      
+PREREQUEST:
+	- Have ffmeg in your file path (to save to movie) 
+	- Point pythonpath to ADIOS python library, e.g.      
+
       export PYTHONPATH=/Users/junmin/software/adios2/master/install/lib/python3.7/site-packages/
 
-To use the python script to visualize:
+        - Command to use the python script to visualize:
 
       python3 tunePlot.py -i tunefoot.bp
 
-      "Note: tunefoot.bp is hardcoded in the analysis code to store every tunefoot created in the file"
+      "Note: tunefoot.bp is the filename hardcoded in the analysis code to store every tunefoot created in the file"
 
+      
 Workflow can be 
 
       Simulation --- SST/BPFile --- Analysis ---- SST/BPFile --- Python 
