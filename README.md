@@ -35,6 +35,16 @@ It contains a sample input files:  beam1.in beam2.in + adios2-config.xml
 
       ../../build-adios2/bin/adios2.mod_tunefoot
   
+without argument, if looks for file tunefoot.in. which looks like this:
+more tunefoot.in
+0                       #bunch <0 or 1>
+
+0 1000                  #particleStart & count
+
+0 4096                  #turnStart & count
+
+1 0 1 0 1 0             #x #px #y #py #z #pz
+
 
 => To plot with tunePlot.py 
 
