@@ -36,6 +36,7 @@ It contains a sample input files:  beam1.in beam2.in + adios2-config.xml
       ../../build-adios2/bin/adios2.mod_tunefoot
   
 without argument, if looks for file tunefoot.in. which looks like this:
+
 more tunefoot.in
 0                       #bunch <0 or 1>
 
@@ -49,7 +50,9 @@ more tunefoot.in
 => To plot with tunePlot.py 
 
 PREREQUEST:
+
 	- Have ffmeg in your file path (to save to movie) 
+
 	- Point pythonpath to ADIOS python library, e.g.      
 
       export PYTHONPATH=/Users/junmin/software/adios2/master/install/lib/python3.7/site-packages/
