@@ -71,8 +71,6 @@ def plotDiff(t1, t2, step):
     cc=[0]*len(t1)
 
     if (step > 0):
-        print (pTune1)
-        print (t1)
         delta1 = (t1-pTune1)**2;
         delta2 = (t2-pTune2)**2;
         cc = delta1 + delta2;
@@ -165,7 +163,7 @@ def plotLines(a1, b1, a2, b2):
             slope = -m*1.0/n*1.0
             equation = str(m)+"x + "+str(n)+"y="+str(m*x0+n*y0)
             angle = np.arctan(slope)*180/3.1415926
-            print ("m=",m, "n=",n, "=>", equation, angle)
+            #print ("m=",m, "n=",n, "=>", equation, angle)
             axesHist.plot(x,y, '-r')
             xmin_max[1] = a1/b1
             tip=findTextTip(m,n, m*x0+n*y0, xmin_max, ymin_max)

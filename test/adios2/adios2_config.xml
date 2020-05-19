@@ -8,60 +8,34 @@
         <engine type="SST"/>
         <engine type="InSituMPI"/>
 
-        DataMan is more elaborate with a transport and IP address required
-        <io name="heat">
-            <engine type="DataMan">
-                <parameter key="Blocking" value="no"/>
-            </engine>
-
-            <transport type="WAN">
-                <parameter key="Library" value="ZMQ"/>
-                <parameter key="IPAddress" value="127.0.0.1"/>
-            </transport>
-        </io>
-
      -->
 
-    <!--======================================
-           Configuration for the Brusselator 
-        ======================================-->
+    <!--===================================================
+           Configuration for the Simulation XMAIN particles
+	   read by Analysis (tunefoot)
+        ===================================================-->
 
     <io name="SimulationOutput">
         <engine type="BPFile">
         </engine>
     </io>
 
-    <!--====================================
-           Configuration for the norm calc 
-        ====================================-->
+    <!--=================================================
+        Configuration for the Simulation XMAIN checkpoint
+        =================================================-->
 
     <io name="PhaseOutput">
         <engine type="BPFile">
         </engine>
     </io>
 
-    <io name="TuneFoot">
-        <engine type="BPFile">
-        </engine>
-    </io>
-
     <!--================================================
-           Configuration for the Python plot 
-           Configuration for the Visualization Input
-           should match the Simulation Output or the 
-           Analysis Output depending on what code you
-           attach to (simulation or analysis)
-        ===============================================-->
-
-    <io name="Vizput">
-        <engine type="SST">
+	Configuration for TuneFoot calculation written by 
+	Analysis (tunefoot) and read by Python plot
+        ================================================-->
+    <io name="TuneFoot">
+        <engine type="BPFile"> 
         </engine>
     </io>
-
-    <io name="FeatureInput">
-        <engine type="BPFile">
-        </engine>
-    </io>
-
 </adios-config>
 

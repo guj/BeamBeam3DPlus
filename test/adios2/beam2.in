@@ -1,13 +1,13 @@
-2 2                                   Npcol, Nprow
+4 1                                   Npcol, Nprow
 6 50000                                 # phase space, # particles
 128 128 1024                             # gridpoints in x, y, z
 1                                      # longitudinal slices 
-1050                                    # number of turns
+32768                                    # number of turns
 2                                      initial distribution (2 Gaussian)
 1d-5 0.2 0.0 1.0 1.0 0.0 0.0      x: sig, be, al, x-sc, px-sc, cn. x, cn px
 1d-5 0.2 0.0 1.0 1.0 0.0 0.0      y: sig, be, al, y-sc, py-sc, cn. y, cn py
 0.075 1.1d-4 0.0 1.0 1.0 0.0 0.0     rms bun. len., rms dp/p0, al, s,s,c,c
-1e11 7.e12 938.27231e6 1.0          # part, energy, mass, charge
+4e11 7.e12 938.27231e6 1.0          # part, energy, mass, charge
 62.31d0 60.32d0 0.002d0                 betatron tune x, y, synchrotron tune
 0.0 0.0                                alpha_x, alpha_y
 0.2 0.2                              beta_x, beta_y
@@ -30,7 +30,7 @@
 2 1                                    # of bunches, # of steps per turn
 0 1000 1                               restart flag, max time for output (sec), flag whether to save all particles
 200000000                              # turns to reset init. dist.
-5 10 10                                  sampling rate for phase space, fraction of particles for phase space, sampling rate for moments
+1 10 10                                  sampling rate for phase space, fraction of particles for phase space, sampling rate for moments
 0.0d0 0.0d0 0.0d0 0.0d0                    FB gains related to BPMs: hor., sector 7; h. s. 9; v. s. 7; v. s. 9
 4.d3 0.0 0.0 0.0 0.0				beta at crab cavity (m), crab frequency (Hz)
 2 8 25000                             xy series: number of particles, length (turns), repetition rate (turns)
