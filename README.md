@@ -58,13 +58,19 @@ PREREQUEST:
 
       	  export PYTHONPATH=/Users/junmin/software/adios2/master/install/lib/python3.7/site-packages/
 
-	- Command to use the python script to visualize:
+	- Command to use the python script to visualize: (using default args) images will refresh and outputs saved to figs/ a movie is also generated from all files in figs/
 
       	  python3 tunePlot.py -i tunefoot.bp
 
       "Note: tunefoot.bp is the filename hardcoded in the analysis code to store every tunefoot created in the file"
 
-      
+       	- Command to plot for attrs x y with resonance lines at (0.3, 0.3) with refresh rate at 1 sec 
+
+      	  python3 tunePlot.py -i tunefoot.bp/ -a x y  -p 0.3 0.3  -s 1 
+
+	- Command to plot for attrs x y with resonance lines at (0.3, 0.3) with no figures on screen, outputs directly to figs/:
+	  python3 tunePlot.py -i tunefoot.bp/ -a x y  -p 0.3 0.3  -s 0
+	          
 Workflow can be 
 
       Simulation --- SST/BPFile --- Analysis ---- SST/BPFile --- Python 
