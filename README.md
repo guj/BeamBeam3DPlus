@@ -71,6 +71,11 @@ PREREQUEST:
 	- Command to plot for attrs x y with resonance lines at (0.3, 0.3) with no figures on screen, outputs directly to figs/:
 	  python3 tunePlot.py -i tunefoot.bp/ -a x y  -p 0.3 0.3  -s 0
 	          
+	- Command to plot for attrs x y with all episodes (timelines): (resonance lines ignored)
+	  viewing up to 8 episodes in the display. By default it is colored by histogram. (add "-3dtype delta" to be colored by delta. delta = sqrt(deltaAtX **2 + deltaAtY ** 2) for each particle's tunefoot)
+
+	  python3 tunePlot.py -i tunefoot.bp/ -a x y  -3d -m 8 
+
 Workflow can be 
 
       Simulation --- SST/BPFile --- Analysis ---- SST/BPFile --- Python 
