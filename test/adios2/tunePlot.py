@@ -8,12 +8,13 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.cm as cm
 import collections
-#import decomp
 import time
 import os
 import sys
 from math  import gcd
 from fractions import Fraction
+from mpl_toolkits.mplot3d import Axes3D
+
 
 def SetupArgs():
     parser = argparse.ArgumentParser()
@@ -22,12 +23,34 @@ def SetupArgs():
     parser.add_argument('--attr', '-a',  help='attr names (default x y)', nargs='+', type=str, default=['x', 'y'])
     parser.add_argument('--point', '-p', help='tune point (default 0 0) (default does not draw)', nargs='+', type=str, default=['0','0'])
 
-    parser.add_argument("--refreshSecond", "-s", help="refresh after (default: 1) seconds. 0 means save to file directly", default=1)
+    parser.add_argument("--refreshSecond", "-s", help="refresh after (default: 0.5) seconds. 0 means save to file directly", default=0.5)
     
+    parser.add_argument("--timeline3d", "-3d", help="3D timeline view", type=bool, default=False)
+    parser.add_argument("--maxTimelineShown", "-m", help="size of timeline window", type=int, default=5);
     args = parser.parse_args()
 
     args.refreshSecond = float(args.refreshSecond)
     
+    if (len(args.attr) < 2):
+        print("Please input 2 or 3 attr names ")
+        sys.exit()
+    if (len(args.point) < 2):
+        print("Please input a 2D point ")
+        sys.exit()
+    if (args.attr[0] is args.attr[1]):
+        print("Both attributes are the same. No work to be done. Bye!")
+        sys.exit()
+    if (args.timeline3d & (len(args.attr) == 3)):
+        print("Warning: timeline request is not for 3 attributes. ignored");
+        args.timeline3d = False
+
+    print ("- Input file: ", args.instream)
+    print ("- Attributes: ", args.attr, "Tune Point: ", args.point)
+    if (args.timeline3d):
+        print ("- Timeline enabled")
+    print ("- Outputs pngs will be in subdir figs/")
+
+
     return args
 
 
@@ -60,8 +83,8 @@ def plotHistogram(t1, t2):
     return cb
 
 def plotDiff(t1, t2, step):
-    d = zip(t1,t2)
-    counter =  collections.Counter(d)
+    #d = zip(t1,t2)
+    #counter =  collections.Counter(d)
 
     cc=[0]*len(t1)
 
@@ -94,7 +117,7 @@ def adjust(xx, yy):
     ymin_max[0] = min(0.99*ymin, ymin_max[0])
     ymin_max[1] = max(1.01*ymax, ymin_max[1])
 
-def plotMeScatter(t1,t2,step):
+def plot2D(t1,t2,step):
     if (step == 0):
         m1=[min(t1), max(t1)]
         m2=[min(t2), max(t2)]
@@ -110,7 +133,7 @@ def plotMeScatter(t1,t2,step):
 
     cb1 = plotHistogram(t1,t2)
     cb2 = plotDiff(t1,t2, step)
-    plt.savefig("figs/"+str(step)+".png")
+    fig.savefig("figs/"+str(step)+".png")
     if (args.refreshSecond > 0):
         plt.show();
         plt.pause(args.refreshSecond)
@@ -134,7 +157,7 @@ def findTextTipUH(m, n, c, xlim, ylim):
         xTop = (c - n*ylim[1])/m
         xTop += (xlim[1] - xTop)*0.1
         xStep = (xTop - xlim[0])*0.1
-        return [xTop-xStep, (c-m*xTop)/n, 30];
+        return [xTop-xStep, (c-m*xTop)/n, 10];
     else:
         yTop = (c - m*xlim[0])/n
         yStep = (yTop - ylim[0])*0.1
@@ -217,42 +240,78 @@ def plotLines(a1, b1, a2, b2):
             axesHist.axvline(x=x0, c='r', linewidth=0.8)
 
 
-  
-                                                                                                         
-#a1 = 3
-#b1 = 10
-#a2 = 3
-#b2 = 10
+def plot3D(t1, t2, t3, step):    
+    d = zip(t1,t2, t3)
+    counter =  collections.Counter(d)
+
+    cc=[]
+    for x,y,z in zip(t1,t2,t3):
+        c = counter [(x,y,z)]
+        cc.append(c)
+
+    pic1 = ax3d_hist.scatter(t1, t2, t3, s=1,  c=cc, cmap=plt.cm.plasma_r)    
+    cb1 = fig.colorbar(pic1, ax=ax3d_hist);
+
+    cc=[0]*len(t1)
+
+    if (step > 0):
+        delta1 = (t1-pTune1)**2;
+        delta2 = (t2-pTune2)**2;
+        delta3 = (t3-pTune3)**2;
+        cc = np.sqrt(delta1 + delta2 + delta3);                             
+
+    pic2 = ax3d_diff.scatter(t1, t2, t3, s=1,  c=cc, cmap=plt.cm.plasma_r)  
+    cb2 = fig.colorbar(pic2, ax=ax3d_diff);
+
+    pTune1[:] = t1
+    pTune2[:] = t2
+    pTune3[:] = t3
+
+    #plt.show()
+    
+    ax3d_hist.view_init(30,35)
+    ax3d_diff.view_init(30,35)
+
+    fig.savefig("figs/"+str(step)+".png")
+    if (args.refreshSecond > 0):
+        plt.show();
+        plt.pause(args.refreshSecond)
+
+    cb1.remove()
+    cb2.remove()
+
+
+def plot3Dtime(t1, t2, step):    
+    d = zip(t1,t2)
+    counter =  collections.Counter(d)
+
+    cc=[]
+    for x,y in zip(t1,t2):
+        c = counter [(x,y)]
+        cc.append(c)
+    
+    time = [step]*len(t1)
+    return t1, time, t2, cc
+    
 
 #previous step
 pTune1 = []
 pTune2 = []
+pTune3 = []
 
 if __name__ == "__main__":
     # fontsize on plot
-    fontsize = 24
+    fontsize = 24    
 
     args = SetupArgs()
 
-    if (len(args.attr) < 2):
-        print("Please input 2 attr names ")
-        sys.exit()
-    if (len(args.point) < 2):
-        print("Please input 2 D point ")
-        sys.exit()
-    if (args.attr[0] is args.attr[1]):
-        print("Both attributes are the same. No work to be done. Bye!")
-        sys.exit()
-
-    #tune points
+    #
+    #tune point = (a1/b1, a2/b2), where ai & bi are integers
+    #
     a1 = Fraction(args.point[0]).limit_denominator().numerator
     b1 = Fraction(args.point[0]).limit_denominator().denominator
     a2 = Fraction(args.point[1]).limit_denominator().numerator
     b2 = Fraction(args.point[1]).limit_denominator().denominator
-
-    print ("- Input file: ", args.instream)
-    print ("- Attributes: ", args.attr, "Tune Point: ", args.point)
-    print ("- Outputs pngs will be in subdir figs/\n")
 
     if ((a1 == 0) & (a2 == 0)):
         xmin_max=[10,-10]
@@ -261,16 +320,37 @@ if __name__ == "__main__":
         xmin_max = [a1/b1, a1/b1]
         ymin_max = [a2/b2, a2/b2]
 
+    plt.style.use('ggplot')
     plt.ion()
-    fig = plt.figure(figsize=(16,6))
 
-    axesHist = fig.add_subplot(121)
-    axesDiff = fig.add_subplot(122)
-    data_plot=plt.plot(0,0)
+    if (len(args.attr) == 2):
+        if (not args.timeline3d):
+            fig = plt.figure(1,figsize=(16,6))
+            axesHist = fig.add_subplot(121)
+            axesDiff = fig.add_subplot(122)
+            
+            axesHist.set_xlabel(args.attr[0])
+            axesHist.set_ylabel(args.attr[1]);
+        
+            axesDiff.set_xlabel(args.attr[0]);
+            axesDiff.set_ylabel(args.attr[1]);
+
+    if (len(args.attr) == 3):    
+        fig = plt.figure(1,figsize=(16,6))
+        ax3d_hist=    fig.add_subplot(121, projection='3d');
+        ax3d_diff=    fig.add_subplot(122, projection='3d');
+
+        ax3d_diff.set_xlabel(args.attr[0], fontsize=15, labelpad=10);
+        ax3d_diff.set_ylabel(args.attr[1], fontsize=15, labelpad=10);
+        ax3d_diff.set_zlabel(args.attr[2], fontsize=15, labelpad=10);
+
+        ax3d_hist.set_xlabel(args.attr[0], fontsize=15, labelpad=10);
+        ax3d_hist.set_ylabel(args.attr[1], fontsize=15, labelpad=10);
+        ax3d_hist.set_zlabel(args.attr[2], fontsize=15, labelpad=10);
+        #ax3d_hist.tick_params(axis='z', rotation=0, length=16, width=2)
 
     #cmap = cm.get_cmap('viridis')
     cmap = cm.get_cmap('tab20')
-
 
     # Read the data from this object
     fr = adios2.open(args.instream, "r", MPI.COMM_WORLD, "adios2_config.xml", "TuneFoot")
@@ -284,21 +364,18 @@ if __name__ == "__main__":
     tune_name1 = args.attr[0]
     tune_name2 = args.attr[1]
     for fr_step in fr:
-#        if fr_step.current_step()
         cur_step= fr_step.current_step()
         vars_info = fr.available_variables()
         varNames = list(vars_info.keys())
 
-        # only draws the first two for 2D image display
-        # can extend to 3D later if needed
-
-        if ((tune_name1 not in vars_info) or (tune_name2 not in vars_info)):
-            print("Please make sure attrs are in the input file. Current known attrs:", list(vars_info.keys()))
-            sys.exit()
+        for n in args.attr:
+            if (n not in vars_info):
+                print("Attr:",n, "is unknown. Please use attrs in the input file. Current known attrs:", varNames)
+                sys.exit()
 
         numPtls = vars_info[tune_name1]["Shape"].split(',')
         if (plot_step == 0):
-            print("Number of points=", numPtls)
+            print("- Using number of points=", numPtls)
         
         tune1_data= fr.read(tune_name1)
         tune2_data= fr.read(tune_name2)
@@ -311,16 +388,57 @@ if __name__ == "__main__":
         currEnd   = currStart + tCount;
         titleStr  =  "Turn: " + str(currStart) + " to " + str(currEnd)
 
-        axesHist.set_xlabel(tune_name1);
-        axesHist.set_ylabel(tune_name2);
-        axesHist.set_title(titleStr)
+        if (len(args.attr) == 2):
+            if (not args.timeline3d):
+                axesHist.set_title(titleStr)
+                axesDiff.set_title(titleStr)
+                plot2D(tune1_data, tune2_data, plot_step);
 
-        axesDiff.set_xlabel(tune_name1);
-        axesDiff.set_ylabel(tune_name2);
-        axesDiff.set_title(titleStr)
+        if (len(args.attr) == 3):
+            tune3_data= fr.read(args.attr[2])
+            #plt.title(titleStr, y=-0.01)
+            plt.suptitle(titleStr)
+            #ax3d_hist.set_title(titleStr)
+            #ax3d_diff.set_title(titleStr)
+            plot3D(tune1_data, tune2_data, tune3_data, plot_step)
 
-        #plt.suptitle(numPtls[0]+" particles", ha='left')
-        plotMeScatter(tune1_data, tune2_data, plot_step);
+            
+        if (args.timeline3d & (len(args.attr) == 2)):
+            if (plot_step == 0):
+                xx =[]
+                tt =[]
+                yy =[]
+                cc =[]
+            tx,ts,ty,tc=plot3Dtime(tune1_data, tune2_data,  plot_step)
+
+            xx.extend(tx)
+            tt.extend(ts)
+            yy.extend(ty)
+            cc.extend(tc)
+
+            fig_timeline = plt.figure(2, figsize=(10,6))
+
+            ax3d =  fig_timeline.add_subplot(111,  projection='3d')
+            ax3d.set_ylabel(args.attr[0], fontsize=15, labelpad=10);
+            ax3d.set_zlabel(args.attr[1], fontsize=15, labelpad=10);
+            ax3d.set_xlabel("Time", fontsize=15, labelpad=10);
+            ax3d.axes.set_xlim3d(0, args.maxTimelineShown); 
+            ax3d.axes.set_xticks(range(0, args.maxTimelineShown+1)); 
+
+            if (plot_step  <= args.maxTimelineShown):                
+                ax3d.scatter(tt,xx,yy, c=cc, s=2,  cmap=plt.cm.plasma_r)                
+            else:
+                del tt[0:len(tune1_data)]
+                del xx[0:len(tune1_data)]
+                del yy[0:len(tune1_data)]
+                del cc[0:len(tune1_data)]
+                ax3d.axes.set_xlim3d(plot_step-args.maxTimelineShown, plot_step); 
+                ax3d.axes.set_xticks(range(plot_step-args.maxTimelineShown, plot_step+1)); 
+                ax3d.scatter(tt,xx,yy, c=cc, s=2,  cmap=plt.cm.plasma_r)
+
+            fig_timeline.savefig("timeline.png")        
+            fig_timeline.show()
+            plt.pause(1);
         
         plot_step = plot_step + 1;
 
