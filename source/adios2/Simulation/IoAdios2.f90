@@ -2,6 +2,7 @@ MODULE ADIOS2_UTIL
   !  this will cause conflict with Commun.f90 class on MPI definition
   !  use mpi
     use adios2
+
     public
 
     type(adios2_adios)      :: a2_handle
@@ -21,17 +22,21 @@ MODULE ADIOS2_UTIL
     type(adios2_attribute)  :: attr_TurnGap
     type(adios2_attribute)  :: attr_Turn
 
+    double precision        :: adios_time = 0.0 ! used by a2_io & a2_engine
+
     logical                 :: adios2_initialized
     integer*8               :: pNbunch
     integer*8, dimension(3) :: vTotal, vStart, vCount    ! for var_handle
     integer*8, dimension(3) :: phTotal, phStart, phCount ! for phvar_handle
 
+    integer                 :: rank
     CONTAINS
 
     !----------------------------------------------------------------------------!
     SUBROUTINE adios2_io_init (comm, ierr)
     !----------------------------------------------------------------------------!
         implicit none
+        include "mpif.h"
 
         integer, intent(out)            :: ierr
         integer, intent(in)             :: comm
@@ -39,8 +44,12 @@ MODULE ADIOS2_UTIL
         character*(20)                  :: currVarName
         integer                         :: i
         character(len=:), allocatable :: engineType
+        double precision :: t_start
 
         ierr = 0
+        t_start = MPI_WTime()
+
+        call MPI_Comm_rank(comm, rank, ierr);
 
         ! Init adios2
         !call adios2_init_config (a2_handle, "adios2_config.xml", comm, &
@@ -70,6 +79,12 @@ MODULE ADIOS2_UTIL
              comm, ierr)
         call adios2_open (a2_phaseout_engine, a2_phase_io, "phaseout", adios2_mode_write, &
              comm, ierr)
+
+        adios_time = MPI_WTime() - t_start;
+
+        if (rank == 0) then
+           write(*,*) "ADIOS INIT TOOK:", adios_time
+        endif
       end subroutine adios2_io_init
 
 
@@ -78,11 +93,23 @@ MODULE ADIOS2_UTIL
     SUBROUTINE adios2_turn_start(ierr)
     !----------------------------------------------------------------------------!
       implicit none
+      include "mpif.h"
+
       integer, intent(out)            :: ierr
+      
+      double precision   :: t_start
+      t_start  = MPI_WTIME()
+
       call adios2_begin_step (a2_engine, ierr)
       if (a2_io_file %valid .eqv. .true.) then 
          call adios2_begin_step (a2_engine_file, ierr)
       endif
+
+      if (rank == 0) then
+         !write(*,*) "turn start took:", MPI_WTIME() - t_start
+      endif
+      adios_time = adios_time + MPI_WTIME() - t_start
+
     end SUBROUTINE adios2_turn_start
 
 
@@ -90,11 +117,22 @@ MODULE ADIOS2_UTIL
     SUBROUTINE adios2_turn_end(ierr)
     !----------------------------------------------------------------------------!
       implicit none
+      include "mpif.h"
+      
+      double precision :: t_start
       integer, intent(out)            :: ierr
+
+      t_start  = MPI_WTIME()
       call adios2_end_step (a2_engine, ierr)
       if (a2_io_file %valid .eqv. .true.) then 
          call adios2_end_step(a2_engine_file, ierr)
       endif
+
+      if (rank == 0) then
+         !write(*,*) "turn end took:", MPI_WTIME() - t_start
+      endif
+
+      adios_time = adios_time + MPI_WTIME() - t_start
     end SUBROUTINE adios2_turn_end
 
 
@@ -140,6 +178,9 @@ MODULE ADIOS2_UTIL
         ! MPI library
         IMPLICIT NONE
         INCLUDE 'mpif.h'
+
+        double precision :: t_start
+
         ! Declare variables
         integer, intent(in)                 :: currBunch, iturn
         integer                             :: ierr
@@ -147,6 +188,8 @@ MODULE ADIOS2_UTIL
         double precision, dimension(vCount(1),vCount(2)), intent(in) :: data
         ! create character array with full filename
         ! write out using 2DECOMP&FFT MPI-IO routines
+
+        t_start  = MPI_WTIME()
 
         ierr = 0
 
@@ -164,6 +207,11 @@ MODULE ADIOS2_UTIL
            call adios2_put(a2_engine_file, var_handle, data, adios2_mode_sync, ierr)
         endif
 
+      if (rank == 0) then
+         !write(*,*) "   put took:", MPI_WTIME() - t_start
+      endif
+
+        adios_time = adios_time + MPI_WTIME() - t_start
     END SUBROUTINE adios2_writePtlData
 
 
@@ -215,8 +263,12 @@ MODULE ADIOS2_UTIL
     SUBROUTINE adios2_io_finalize(ierr)
     !----------------------------------------------------------------------------!
         implicit none
+        include "mpif.h"
 
         integer, intent(out) :: ierr
+        double precision :: t_start
+        
+        t_start = MPI_WTime()
 
         ierr = 0
         call adios2_close    (a2_phaseout_engine, ierr)
@@ -229,6 +281,10 @@ MODULE ADIOS2_UTIL
 
         call adios2_finalize (a2_handle, ierr)
 
+        adios_time = adios_time + MPI_WTime() - t_start;
+        if (rank == 0) then
+           write (*,*) "Total adios time  = ", adios_time
+        endif
     END SUBROUTINE adios2_io_finalize
 
 END MODULE ADIOS2_UTIL
