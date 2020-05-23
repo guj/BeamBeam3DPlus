@@ -513,7 +513,7 @@ MODULE ADIOS2_TUNEFOOT
 
       tmp  = TurnSize * perRankPtl
       if (rank == 0) then
-         allocate(array(numTunes, TurnSize, ParticleSize));       
+         !!allocate(array(numTunes, TurnSize, ParticleSize));       
          allocate(tmpArray(TurnSize, ParticleSize));       
       endif         
 
@@ -530,6 +530,7 @@ MODULE ADIOS2_TUNEFOOT
          endif         
       enddo
 
+      if (rank == 0)  write (*, *) " ... tunefoot_cal consumed:", MPI_WTime() - end;
       call MPI_Barrier(MPI_COMM_WORLD, ierr);
 
 
@@ -553,7 +554,7 @@ MODULE ADIOS2_TUNEFOOT
       deallocate(localArray)
 
       if (rank == 0) then
-         deallocate(array)
+         !!deallocate(array)
       endif
       
     end SUBROUTINE tunefoot_run
