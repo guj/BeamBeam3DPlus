@@ -17,8 +17,9 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 def SetupArgs():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--instream", "-i", help="Name of the input stream", required=True)
+    parser = argparse.ArgumentParser(description='Python plot for BeamBeam3D.',  fromfile_prefix_chars='@')
+    parser.add_argument("--configFile", "-c", help="Configuration Input file (This excludes all other command line options).", type=str, default='')
+    parser.add_argument("--instream", "-i", help="Name of the input stream")
     parser.add_argument("--outstream", "-o", help="Name of the output directory to save plots. default: ./figs/", default='figs/')
 
     parser.add_argument('--attr', '-a',  help='attr names (default x y)', nargs='+', type=str, default=['x', 'y'])
@@ -28,12 +29,34 @@ def SetupArgs():
     
     parser.add_argument("--timeline3d", "-3d", help="3D timeline view", type=bool, default=False)
     parser.add_argument("--maxTimelineShown", "-m", help="size of timeline window", type=int, default=5);
-    args = parser.parse_args()
+
+    args = parser.parse_args();
+    #if configFile is presented, then ignore all other inputs, and read from configFile
+    if (len(args.configFile) > 0):        
+        args = parser.parse_args(['@'+args.configFile])
+        if (args.instream):
+            args.instream = args.instream.strip()
+        if (args.outstream):
+            args.outstream = args.outstream.strip()
+        if (args.attr):
+            if (len(args.attr) == 1):
+                args.attr[0].strip()
+                args.attr = args.attr[0].split()
+        if (args.point):
+            if (len(args.point) == 1):
+                args.point[0].strip()
+                args.point = args.point[0].split()
+                
+    if (not args.instream):
+        print('Specifiy tunefoot file either through -i your_input or set it in config file and use -c your_configFile')
+        sys.exit()
+
 
     args.refreshSecond = float(args.refreshSecond)
     
     if (len(args.attr) < 2):
-        print("Please input 2 or 3 attr names ")
+        print("Please input 2 or 3 attr names. current:"+str(args.attr))
+        print(args.point)
         sys.exit()
     if (len(args.point) < 2):
         print("Please input a 2D point ")
@@ -59,7 +82,7 @@ def SetupArgs():
         print ("- Timeline enabled")
     isdir = os.path.isdir(args.outstream)  
     if (not isdir):
-        print("Please make sure dir: ", args.outstream, "exists. Or point to a valid one using -o");
+        print("Please make sure dir: [", args.outstream, "]exists. Or point to a valid one using -o");
         sys.exit()
 
     print ("- Outputs pngs will be in subdir "+args.outstream)
