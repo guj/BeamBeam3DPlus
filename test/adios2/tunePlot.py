@@ -45,6 +45,14 @@ def SetupArgs():
         print("Warning: timeline request is not for 3 attributes. ignored");
         args.timeline3d = False
 
+    if (not args.outstream.endswith('/')):
+        args.outstream += '/'
+        
+    while (True):
+        if (not args.instream.endswith('/')):
+            break;
+        args.instream = args.instream[:-1]
+
     print ("- Input file: ", args.instream)
     print ("- Attributes: ", args.attr, "Tune Point: ", args.point)
     if (args.timeline3d):
@@ -54,7 +62,7 @@ def SetupArgs():
         print("Please make sure dir: ", args.outstream, "exists. Or point to a valid one using -o");
         sys.exit()
 
-    print ("- Outputs pngs will be in subdir "+args.outstream+"/")
+    print ("- Outputs pngs will be in subdir "+args.outstream)
 
 
     return args
@@ -139,7 +147,7 @@ def plot2D(t1,t2,step):
 
     cb1 = plotHistogram(t1,t2)
     cb2 = plotDiff(t1,t2, step)
-    fig.savefig(args.outstream+"/"+str(step)+".png")
+    fig.savefig(args.outstream + str(step) + ".png")
     if (args.refreshSecond > 0):
         plt.show();
         plt.pause(args.refreshSecond)
