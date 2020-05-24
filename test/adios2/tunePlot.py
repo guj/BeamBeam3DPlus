@@ -19,6 +19,7 @@ from mpl_toolkits.mplot3d import Axes3D
 def SetupArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument("--instream", "-i", help="Name of the input stream", required=True)
+    parser.add_argument("--outstream", "-o", help="Name of the output directory to save plots. default: ./figs/", default='figs/')
 
     parser.add_argument('--attr', '-a',  help='attr names (default x y)', nargs='+', type=str, default=['x', 'y'])
     parser.add_argument('--point', '-p', help='tune point (default 0 0) (default does not draw)', nargs='+', type=str, default=['0','0'])
@@ -48,7 +49,12 @@ def SetupArgs():
     print ("- Attributes: ", args.attr, "Tune Point: ", args.point)
     if (args.timeline3d):
         print ("- Timeline enabled")
-    print ("- Outputs pngs will be in subdir figs/")
+    isdir = os.path.isdir(args.outstream)  
+    if (not isdir):
+        print("Please make sure dir: ", args.outstream, "exists. Or point to a valid one using -o");
+        sys.exit()
+
+    print ("- Outputs pngs will be in subdir "+args.outstream+"/")
 
 
     return args
@@ -133,7 +139,7 @@ def plot2D(t1,t2,step):
 
     cb1 = plotHistogram(t1,t2)
     cb2 = plotDiff(t1,t2, step)
-    fig.savefig("figs/"+str(step)+".png")
+    fig.savefig(args.outstream+"/"+str(step)+".png")
     if (args.refreshSecond > 0):
         plt.show();
         plt.pause(args.refreshSecond)
