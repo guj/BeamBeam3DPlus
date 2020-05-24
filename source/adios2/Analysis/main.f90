@@ -44,12 +44,11 @@ program main
      call tunefoot_set_bunch(bunchID)
      call tunefoot_setTurnRange(tStart, tCount)
 
-     !call tunefoot_writer_init(MPI_COMM_NULL, attrPos1, attrPos2, ierr);
-     call tunefoot_writer_init(MPI_COMM_NULL, tuneAttrPos, tuneAttrPosSize, ierr);
+     !call tunefoot_writer_init(MPI_COMM_NULL, tuneAttrPos, tuneAttrPosSize, ierr);
+     call tunefoot_writer_init(MPI_COMM_WORLD, tuneAttrPos, tuneAttrPosSize, ierr);
      
      hasMore = 1
      do while (hasMore .gt. 0)
-        !call tunefoot_run1(attrPos1, attrPos2, hasMore) 
         call tunefoot_run(tuneAttrPos, tuneAttrPosSize, hasMore) 
      enddo
   endif
@@ -154,7 +153,7 @@ contains
           counter = counter+1;
        endif
     enddo
-    write(*,*) tuneAttrPos
+    !write(*,*) tuneAttrPos
   end subroutine read_input_file
 !--------------------------------------------
 
