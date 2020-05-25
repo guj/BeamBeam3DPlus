@@ -2,3 +2,6 @@
 -a x y
 -p 0.3 0.3
 -o figs-1c/
+-d true
+-s 3
+-m 10

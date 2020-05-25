@@ -27,7 +27,8 @@ def SetupArgs():
 
     parser.add_argument("--refreshSecond", "-s", help="refresh after (default: 0.5) seconds. 0 means save to file directly", default=0.5)
     
-    parser.add_argument("--timeline3d", "-3d", help="3D timeline view", type=bool, default=False)
+    #parser.add_argument("--timeline3d", "-d", help="3D timeline view (default false)", type=bool, default=False)
+    parser.add_argument("--timeline3d", "-d", help="3D timeline view (default false)", type=str, default='false')
     parser.add_argument("--maxTimelineShown", "-m", help="size of timeline window", type=int, default=5);
 
     args = parser.parse_args();
@@ -46,7 +47,7 @@ def SetupArgs():
             if (len(args.point) == 1):
                 args.point[0].strip()
                 args.point = args.point[0].split()
-                
+                            
     if (not args.instream):
         print('Specifiy tunefoot file either through -i your_input or set it in config file and use -c your_configFile')
         sys.exit()
@@ -64,6 +65,14 @@ def SetupArgs():
     if (args.attr[0] is args.attr[1]):
         print("Both attributes are the same. No work to be done. Bye!")
         sys.exit()
+
+    print (args.timeline3d)
+    if (args.timeline3d.lower().strip() in ("yes", "true", "t", "1")):
+        args.timeline3d=True
+    else:
+        args.timeline3d=False
+
+    print (args.timeline3d)
     if (args.timeline3d & (len(args.attr) == 3)):
         print("Warning: timeline request is not for 3 attributes. ignored");
         args.timeline3d = False
@@ -78,8 +87,9 @@ def SetupArgs():
 
     print ("- Input file: ", args.instream)
     print ("- Attributes: ", args.attr, "Tune Point: ", args.point)
-    if (args.timeline3d):
-        print ("- Timeline enabled")
+    print ("- refresh every ",args.refreshSecond, "seconds")
+
+    print ("- Timeline enabled? " +str(args.timeline3d))
     isdir = os.path.isdir(args.outstream)  
     if (not isdir):
         print("Please make sure dir: [", args.outstream, "]exists. Or point to a valid one using -o");
