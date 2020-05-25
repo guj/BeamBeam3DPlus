@@ -27,6 +27,13 @@ PREREQUEST:  install adios2:
  
 It contains a sample input files:  beam1.in beam2.in + adios2-config.xml
 
+
+- Important:
+
+      make sure ADIOS is in your library path:
+
+      export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/global/cscratch1/sd/junmin/software/adios2/master/install-release/lib64/
+
 - Simulation:
 
       mpirun -n 4 ../../build-adios2/bin/adios2.xmain 
@@ -35,7 +42,7 @@ It contains a sample input files:  beam1.in beam2.in + adios2-config.xml
 
       ../../build-adios2/bin/adios2.mod_tunefoot
   
-without argument, if looks for file tunefoot.in. which looks like this:
+without argument, if looks for file tunefoot.in. which shall look like this:
 
 	more tunefoot.in
 
@@ -93,7 +100,7 @@ where SST or BPFile mode are specified in the adios2_config.xml
             
             
   
-
+<!--
 :pensive:  ================== FOR using with SENSEI ===============. :pensive:
 
 PREREQUEST: install sensei: 
@@ -144,6 +151,6 @@ PREREQUEST: install sensei:
       mpirun -n 4 ../../build-sensei/bin/sensei.xmain
 
 
-
+-->
   
     
