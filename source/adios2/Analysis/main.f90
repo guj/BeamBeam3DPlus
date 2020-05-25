@@ -124,7 +124,7 @@ contains
        return;
     endif
 
-    if (rank_id .eq. 0) write(*,*) "reading from input file:", file_name, file_exists       
+    if (rank_id .eq. 0) write(*,*) "reading from input file:", file_name
     
     open(unit=13,file=file_name,status='old')
 

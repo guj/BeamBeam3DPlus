@@ -333,7 +333,7 @@ MODULE ADIOS2_TUNEFOOT
 
       call MPI_Barrier(MPI_COMM_WORLD, ierr);      
       if (rank == 0) then 
-         write (*, *) " ... tunefoot_cal consumed:", MPI_WTime() - end;
+         write (*, *) " ... tunefoot_calulation consumed:", MPI_WTime() - end;
       endif
 
 
