@@ -2,28 +2,15 @@ module swap craype-haswell craype-mic-knl
 module swap PrgEnv-intel PrgEnv-gnu
 module load cmake/3.14.4
 module load emacs 
+
+#load python3
+module load python 
+
+module load ffmpeg
 export CRAYPE_LINK_TYPE=dynamic
 
 
-#export HDF5_ROOT=/global/cscratch1/sd/junmin/ECP/H5Dev/install/
-export HDF5_DIR=/global/cscratch1/sd/junmin/ECP/H5Dev/install/
 
-export ADIOS2_ROOT=/global/cscratch1/sd/junmin/ECP/ADIOS/install_release/
-export ADIOS2_DIR=/global/cscratch1/sd/junmin/ECP/ADIOS/install_release/
-
-export VTK_DIR=/global/cscratch1/sd/junmin/SENSEI/VTK/git/install/lib64/cmake/vtk-9.0/
-
-export SENSEI_ROOT=/global/cscratch1/sd/junmin/SENSEI/install/
-export SENSEI_DIR=/global/cscratch1/sd/junmin/SENSEI/install/lib/cmake/
-
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${SENSEI_ROOT}/lib/
-
-export VTK_LIB=/global/cscratch1/sd/junmin/SENSEI/VTK/git/install/lib64/
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${VTK_LIB}
-
-mkdir build
-cd build
-cmake ../source/sensei
 
 
 

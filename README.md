@@ -5,9 +5,15 @@ PREREQUEST:  module load cmake
 
 ================== For using with ADIOS2 =============
 
-PREREQUEST:  install adios2:
+PREREQUEST:  adios2 
+
+
+=> if you need to build adios2, first get from repo:
 
       git clone https://github.com/ornladios/ADIOS2
+
+      build and install adios2 (use python3 as the python library)
+                  
       
 => How to build with adios2:
 
@@ -17,7 +23,8 @@ PREREQUEST:  install adios2:
 
       cd build-adios2
 
-      cmake ../source/adios2
+
+      cmake  ../source/adios2
 
       make 
 
