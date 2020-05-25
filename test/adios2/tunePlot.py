@@ -66,13 +66,11 @@ def SetupArgs():
         print("Both attributes are the same. No work to be done. Bye!")
         sys.exit()
 
-    print (args.timeline3d)
     if (args.timeline3d.lower().strip() in ("yes", "true", "t", "1")):
         args.timeline3d=True
     else:
         args.timeline3d=False
 
-    print (args.timeline3d)
     if (args.timeline3d & (len(args.attr) == 3)):
         print("Warning: timeline request is not for 3 attributes. ignored");
         args.timeline3d = False
