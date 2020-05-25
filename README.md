@@ -76,6 +76,10 @@ PREREQUEST:
 
 	  python3 tunePlot.py -i tunefoot.bp/ -a x y  -3d -m 8 
 
+	- Alternative is to list all the inputs in a config file, example contents see: plot.in 
+	  and pass as -c:
+	  python3 tunePlot.py -c plot.in
+
 Workflow can be 
 
       Simulation --- SST/BPFile --- Analysis ---- SST/BPFile --- Python 
