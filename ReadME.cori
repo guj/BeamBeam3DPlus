@@ -10,6 +10,10 @@ module load ffmpeg
 export CRAYPE_LINK_TYPE=dynamic
 
 
+# USE the latest ADIOS2 release (2.6.0, from master  branch) this is due to some cmake changes 
+
+# cori's python3 has some issue with 3d projections when using with plt.ion() for updating graph.
+  so please limit the plot attributes to 2 and do not use the timeline option. i.e (-d false)
 
 
 
