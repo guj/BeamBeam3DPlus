@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<adios-config>
+
+    <!-- example engines 
+
+        <engine type="BPFile"/>
+        <engine type="HDF5"/>
+        <engine type="SST"/>
+        <engine type="InSituMPI"/>
+
+     -->
+
+    <!--===================================================
+           Configuration for the Simulation XMAIN particles
+	   read by Analysis (tunefoot)
+        ===================================================-->
+
+    <io name="SimulationOutput">
+        <engine type="BPFile">
+        </engine>
+    </io>
+
+    <!--=================================================
+        Configuration for the Simulation XMAIN checkpoint
+        =================================================-->
+
+    <io name="PhaseOutput">
+        <engine type="BPFile">
+        </engine>
+    </io>
+
+    <!--================================================
+	Configuration for TuneFoot calculation written by 
+	Analysis (tunefoot) and read by Python plot
+        ================================================-->
+    <io name="TuneFoot">
+        <engine type="BPFile"> 
+        </engine>
+    </io>
+</adios-config>
+

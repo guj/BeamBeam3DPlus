@@ -1,0 +1,7 @@
+-i tunefoot.bp/
+-a x y
+-p 0.3 0.3
+-o figs/
+-d false
+-s 0
+-m 10
