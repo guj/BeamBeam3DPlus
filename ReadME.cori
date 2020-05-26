@@ -16,6 +16,8 @@ export CRAYPE_LINK_TYPE=dynamic
   so please limit the plot attributes to 2 and do not use the timeline option. i.e (-d false)
 
 
+Shell scripts are in example/cori
+modify accordingly
 
 
 
