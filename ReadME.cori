@@ -10,14 +10,46 @@ module load ffmpeg
 export CRAYPE_LINK_TYPE=dynamic
 
 
-# USE the latest ADIOS2 release (2.6.0, from master  branch) this is due to some cmake changes 
+############ Disclaimer #############	     
 
-# cori's python3 has some issue with 3d projections when using with plt.ion() for updating graph.
-  so please limit the plot attributes to 2 and do not use the timeline option. i.e (-d false)
+	 Please USE the latest ADIOS2 release (2.6.0, from master  branch) this is due to some cmake changes 
+	      
+	 cori's python3 has some issue with 3d projections when using with plt.ion() for updating graph. so please limit the plot attributes to 2 and do not use the timeline option. i.e (-d false)
+
+#####################################
+
+Build ADIOS2: 
+
+      mkdir ADIOS2/
+
+      cd ADIOS2/
+
+      mkdir build/
+
+      git clone https://github.com/ornladios/ADIOS2 source
+
+      module load python 
+
+      cd build 
+      
+      cmake -DCMAKE_INSTALL_PREFIX=../install ../source 
+
+      make -j 8
+
+      make install
 
 
+SETUP PATH
+
+       add adios library to LD_LIBRARY_PATH 
+       e.g. export LD_LIBRARY_PATH=/global/cscratch1/sd/junmin/software/adios2/master/install/lib64/:${LD_LIBRARY_PATH}
+
+       e.g. export PYTHONPATH=/global/cscratch1/sd/junmin/software/adios2/master/install/lib/
+
+      
 Shell scripts are in example/cori
 modify accordingly
+
 
 
 
