@@ -18,6 +18,13 @@ export CRAYPE_LINK_TYPE=dynamic
 
 #####################################
 
+
+A copy of latest adios2 is at:
+     /global/cscratch1/sd/junmin/software/adios2/master/install 
+feel free to use it.
+
+
+If you want to have your own copy, here are the steps:
 Build ADIOS2: 
 
       mkdir ADIOS2/
